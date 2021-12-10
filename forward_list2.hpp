@@ -64,7 +64,7 @@ public:
     }
 
     forward_list2(const forward_list2& other) : 
-        forward_list2(std::allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()))
+        forward_list2(std::allocator_traits<allocator_type>::select_on_container_copy_construction(other.m_list.get_allocator()))
     {
         m_last = m_list.insert_after(m_last, other.begin(), other.end());
     }
@@ -75,7 +75,11 @@ public:
         m_last = m_list.insert_after(m_last, other.begin(), other.end());
     }
 
-    forward_list2(forward_list2&& other) = default;
+    forward_list2(forward_list2&& other) :
+        m_list(std::move(other.m_list)), m_last(std::move(other.m_last))
+    {
+        other.clear();
+    }
 
     forward_list2(forward_list2&& other, const Allocator& alloc) :
         forward_list2(alloc)

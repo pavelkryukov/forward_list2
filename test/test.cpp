@@ -26,7 +26,7 @@
 
 #include <utility>
 
-void check_iterators(forward_list2<int>& l)
+static void check_iterators(forward_list2<int>& l)
 {
     CHECK(std::next(l.before_begin()) == l.begin());
     CHECK(std::next(l.before_end()) == l.end());
@@ -36,14 +36,36 @@ void check_iterators(forward_list2<int>& l)
     CHECK(std::next(std::as_const(l).before_end()) == std::as_const(l).end());
 }
 
-TEST_CASE("empty list")
+static void check_empty_list(forward_list2<int>& l)
 {
-    forward_list2<int> l;
-
     CHECK(l.empty());
     CHECK(l.begin() == l.end());
     CHECK(l.before_begin() == l.before_end());
     check_iterators(l);
+}
+
+static void check_ranged_list(forward_list2<int>& l, size_t range)
+{
+    int count = 0;
+    for (auto i : l) {
+        ++count;
+        CHECK(i == count);
+    }
+
+    CHECK(count == range);
+    CHECK(!l.empty());
+    CHECK(l.front() == 1);
+    CHECK(l.back() == range);
+    CHECK(std::as_const(l).front() == 1);
+    CHECK(std::as_const(l).back() == range);
+    check_iterators(l);
+}
+
+TEST_CASE("empty list")
+{
+    forward_list2<int> l;
+
+    check_empty_list(l);
 }
 
 TEST_CASE("counter-init list")
@@ -70,16 +92,36 @@ TEST_CASE("iterator-init list")
     const std::vector<int> v{ 1, 2, 3, 4, 5 };
     forward_list2<int> l(v.begin(), v.end());
 
-    int count = 0;
-    for (auto i : l) {
-        ++count;
-        CHECK(i == count);
-    }
+    check_ranged_list(l, 5);
+}
 
-    CHECK(!l.empty());
-    CHECK(l.front() == 1);
-    CHECK(l.back() == 5);
-    CHECK(std::as_const(l).front() == 1);
-    CHECK(std::as_const(l).back() == 5);
-    check_iterators(l);
+TEST_CASE("list copy")
+{
+    const std::vector<int> v{ 1, 2, 3, 4, 5 };
+    forward_list2<int> l1(v.begin(), v.end());
+    auto l2 = l1;
+
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 5);
+}
+
+TEST_CASE("list clear")
+{
+    const std::vector<int> v{ 1, 2, 3, 4, 5 };
+    forward_list2<int> l1(v.begin(), v.end());
+    auto l2 = l1;
+    l1.clear();
+
+    check_empty_list(l1);
+    check_ranged_list(l2, 5);
+}
+
+TEST_CASE("list move")
+{
+    const std::vector<int> v{ 1, 2, 3, 4, 5 };
+    forward_list2<int> l1(v.begin(), v.end());
+    auto l2 = std::move(l1);
+
+    check_empty_list(l1);
+    check_ranged_list(l2, 5);
 }
