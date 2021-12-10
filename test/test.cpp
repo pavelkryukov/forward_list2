@@ -95,10 +95,17 @@ TEST_CASE("iterator-init list")
     check_ranged_list(l, 5);
 }
 
+TEST_CASE("init-list list")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5 });
+
+    check_ranged_list(l, 5);
+}
+
+
 TEST_CASE("list copy")
 {
-    const std::vector<int> v{ 1, 2, 3, 4, 5 };
-    forward_list2<int> l1(v.begin(), v.end());
+    forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = l1;
 
     check_ranged_list(l1, 5);
@@ -107,8 +114,7 @@ TEST_CASE("list copy")
 
 TEST_CASE("list clear")
 {
-    const std::vector<int> v{ 1, 2, 3, 4, 5 };
-    forward_list2<int> l1(v.begin(), v.end());
+    forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = l1;
     l1.clear();
 
@@ -118,10 +124,59 @@ TEST_CASE("list clear")
 
 TEST_CASE("list move")
 {
-    const std::vector<int> v{ 1, 2, 3, 4, 5 };
-    forward_list2<int> l1(v.begin(), v.end());
+    forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = std::move(l1);
 
     check_empty_list(l1);
     check_ranged_list(l2, 5);
+}
+
+TEST_CASE("insert back")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5 });
+    l.insert_after(l.before_end(), 6);
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("insert front")
+{
+    forward_list2<int> l({ 2, 3, 4, 5, 6 });
+    l.insert_after(l.before_begin(), 1);
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("insert middle")
+{
+    forward_list2<int> l({ 1, 3, 4, 5, 6 });
+    l.insert_after(l.begin(), 2);
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("insert iterators")
+{
+    forward_list2<int> l({ 1, 6 });
+    std::vector<int> v{2, 3, 4, 5};
+    l.insert_after(l.begin(), v.begin(), v.end());
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("insert iterators to end")
+{
+    forward_list2<int> l({ 1 });
+    std::vector<int> v{2, 3, 4, 5};
+    l.insert_after(l.begin(), v.begin(), v.end());
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("insert nothing")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5});
+    l.insert_after(l.begin(), 0, 100);
+
+    check_ranged_list(l, 5);
 }
