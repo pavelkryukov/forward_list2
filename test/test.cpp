@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021 Pavel I. Kryukov
+ * Copyright (c) 2021 Pavel I. Kryukov
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 #include "catch.hpp"
 
 #include <utility>
+
+static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*));
 
 static void check_iterators(forward_list2<int>& l)
 {
