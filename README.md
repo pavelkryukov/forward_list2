@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/pavelkryukov/forward_list2/branch/main/graph/badge.svg?token=5KtoC3WASR)](https://codecov.io/gh/pavelkryukov/forward_list2)
+
 # forward_list2
 
 Wrapper around C++ `forward_list` with iterator to the last element.
