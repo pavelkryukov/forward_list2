@@ -55,5 +55,3 @@ jobs:
     - name: Run test
       working-directory: test
       run: ./test
-
-  
