@@ -1,0 +1,59 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  gcc-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Make test
+      working-directory: test
+      run: make test
+      env:
+        CXX: g++
+        CXXFLAGS: '-fprofile-arcs -ftest-coverage -g'
+        LDFLAGS: '-lgcov --coverage'
+    - name: Run test
+      working-directory: test
+      run: ./test
+    - name: Codecov
+      working-directory: test
+      run: bash <(curl -s https://codecov.io/bash) -x "gcov"
+
+  ubsan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Make test
+      working-directory: test
+      run: make test
+      env:
+        CXX: clang++
+        CXXFLAGS: '-g -fsanitize=undefined'
+        LDFLAGS: '-fsanitize=undefined -lgcc_s --rtlib=compiler-rt'
+    - name: Run test
+      working-directory: test
+      run: ./test
+
+  asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Make test
+      working-directory: test
+      run: make test
+      env:
+        BOOST_PFR_PATH: ../pfr/include
+        CXX: clang++
+        CXXFLAGS: '-fsanitize=address'
+        LDFLAGS: '-fsanitize=address'
+    - name: Run test
+      working-directory: test
+      run: ./test
+
+  
