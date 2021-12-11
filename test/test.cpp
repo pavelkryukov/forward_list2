@@ -243,23 +243,104 @@ TEST_CASE("emplace end")
 TEST_CASE("erase begin")
 {
     forward_list2<int> l({ 7, 1, 2, 3, 4, 5});
-    l.erase_after(l.before_begin());
-
+    auto it = l.erase_after(l.before_begin());
+ 
+    CHECK(it == l.begin());
     check_ranged_list(l, 5);
 }
 
 TEST_CASE("erase middle")
 {
     forward_list2<int> l({ 1, 7, 2, 3, 4, 5});
-    l.erase_after(l.begin());
+    auto it = l.erase_after(l.begin());
 
+    CHECK(it == std::next(l.begin()));
     check_ranged_list(l, 5);
 }
 
 TEST_CASE("erase end")
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5, 8});
-    l.erase_after(std::next(l.before_begin(), 5));
+    auto it = l.erase_after(std::next(l.before_begin(), 5));
 
+    CHECK(it == l.end());
     check_ranged_list(l, 5);
+}
+
+TEST_CASE("erase range begin")
+{
+    forward_list2<int> l({ 7, 8, 9, 1, 2, 3, 4, 5});
+    auto it = l.erase_after(l.before_begin(), std::next(l.before_begin(), 4));
+ 
+    CHECK(it == l.begin());
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("erase range middle")
+{
+    forward_list2<int> l({ 1, 7, 8, 9, 2, 3, 4, 5});
+    auto it = l.erase_after(l.begin(), std::next(l.begin(), 4));
+
+    CHECK(it == std::next(l.begin()));
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("erase range end")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5, 7, 8, 9});
+    auto it = l.erase_after(std::next(l.before_begin(), 5), l.end());
+
+    CHECK(it == l.end());
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("push front and back")
+{
+    forward_list2<int> l({ 2 });
+    l.push_back(3);
+    l.push_front(1);
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("push front to empty")
+{
+    forward_list2<int> l;
+    l.push_front(1);
+
+    check_ranged_list(l, 1);
+}
+
+TEST_CASE("push back to empty")
+{
+    forward_list2<int> l;
+    l.push_back(1);
+
+    check_ranged_list(l, 1);
+}
+
+TEST_CASE("emplace front and back")
+{
+    forward_list2<int> l({ 2 });
+    l.emplace_back(3);
+    l.emplace_front(1);
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("pop front")
+{
+    forward_list2<int> l({ 0, 1, 2, 3 });
+    l.pop_front();
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("pop front to empty")
+{
+    forward_list2<int> l({ 1, 2, 3, 4 });
+    while (!l.empty())
+        l.pop_front();
+
+    check_empty_list(l);
 }

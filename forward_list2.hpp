@@ -123,7 +123,7 @@ public:
     const_reference front() const { return *begin(); }
 
     // New!
-    reference back()             { return *before_end(); }
+//    reference back()             { return *before_end(); }
     const_reference back() const { return *before_end(); }
 
     iterator before_begin()              noexcept { return m_list.before_begin(); }
@@ -135,7 +135,7 @@ public:
     const_iterator cbegin() const noexcept { return m_list.cbegin(); }
 
     // New!
-    iterator before_end()              noexcept { return m_last; }
+//    iterator before_end()              noexcept { return m_last; }
     const_iterator before_end()  const noexcept { return m_last; }
     const_iterator cbefore_end() const noexcept { return m_last; }
 
@@ -182,14 +182,35 @@ public:
         return last_pos;
     }
 
-    // FIXME: must be a const_iterator input!
-    iterator erase_after(iterator pos)
+    iterator erase_after(const_iterator pos)
     {
-        if (std::next(pos) == m_last)
-            m_last = pos;
-
-        return m_list.erase_after(pos);
+        auto next = m_list.erase_after(pos);
+        adjust_last_iterator_on_deletion(pos, next);
+        return next;
     }
+    
+    iterator erase_after(const_iterator first, const_iterator last)
+    {
+        auto next = m_list.erase_after(first, last);
+        adjust_last_iterator_on_deletion(first, last);
+        return next;
+    }
+
+    void push_front(const T& value) { insert_after(before_begin(), value); }
+    void push_front(T&& value)      { insert_after(before_begin(), std::move(value)); }
+
+    // New!
+    void push_back(const T& value)  { insert_after(before_end(), value); }
+    void push_back(T&& value)       { insert_after(before_end(), std::move(value)); }
+    
+    template<class... Args>
+    void emplace_front(Args&&... args) { emplace_after(before_begin(), std::forward<Args>(args)...); }
+
+    // New!
+    template<class... Args>
+    void emplace_back(Args&&... args) { emplace_after(before_end(), std::forward<Args>(args)...); }
+
+    void pop_front() { erase_after(before_begin()); }
 
 private:
     void insert_to_empty(size_t count, const T& value)
@@ -219,6 +240,12 @@ private:
             m_last = final_pos;
     }
 
-    Base     m_list;
-    iterator m_last;
+    void adjust_last_iterator_on_deletion(const const_iterator& first_pos, const const_iterator& final_pos)
+    {
+        if (final_pos == cend())
+            m_last = first_pos;
+    }
+
+    Base           m_list;
+    const_iterator m_last;
 };
