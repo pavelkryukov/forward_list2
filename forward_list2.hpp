@@ -20,6 +20,9 @@
  * SOFTWARE.
  */
  
+#ifndef FORWARD_LIST_2_HPP
+#define FORWARD_LIST_2_HPP
+ 
 #include <forward_list>
 
 template<typename T, class Allocator = std::allocator<T>>
@@ -249,3 +252,5 @@ private:
     Base           m_list;
     const_iterator m_last;
 };
+
+#endif // FORWARD_LIST_2_HPP
