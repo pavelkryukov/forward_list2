@@ -40,6 +40,7 @@ static void check_iterators(forward_list2<int>& l)
 
 static void check_empty_list(forward_list2<int>& l)
 {
+    CHECK(l == forward_list2<int>());
     CHECK(l.empty());
     CHECK(l.begin() == l.end());
     CHECK(l.before_begin() == l.before_end());
@@ -343,4 +344,50 @@ TEST_CASE("pop front to empty")
         l.pop_front();
 
     check_empty_list(l);
+}
+
+TEST_CASE("resize increase")
+{   
+    forward_list2<int> l({ 1, 2, 3, 4 });
+    l.resize(7);
+
+    CHECK(l == forward_list2<int>{ 1, 2, 3, 4, 0, 0, 0 });
+
+    check_iterators(l);
+}
+
+TEST_CASE("resize decrease")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5, 6, 7 });
+    l.resize(3);
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("resize value increase")
+{   
+    forward_list2<int> l({ 1, 2, 3, 4 });
+    l.resize(7, 8);
+
+    CHECK(l == forward_list2<int>{ 1, 2, 3, 4, 8, 8, 8 });
+
+    check_iterators(l);
+}
+
+TEST_CASE("resize value decrease")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5, 6, 7 });
+    l.resize(3, 8);
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("swap")
+{
+    forward_list2<int> l1({ 1, 2, 3, 4, 5, 6, 7 });
+    forward_list2<int> l2({ 1, 2 });
+    l1.swap(l2);
+
+    check_ranged_list(l1, 2);
+    check_ranged_list(l2, 7);
 }

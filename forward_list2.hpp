@@ -214,6 +214,35 @@ public:
     void emplace_back(Args&&... args) { emplace_after(before_end(), std::forward<Args>(args)...); }
 
     void pop_front() { erase_after(before_begin()); }
+    
+    void resize(size_t count, const T& value)
+    {
+        auto it = before_begin();
+        for (size_type i = 0; i < count; ++i, ++it) {
+            if (it == before_end()) {
+                insert_after(it, count - i, value);
+                return;
+            }
+        }
+
+        erase_after(it, end());
+    }
+
+    void resize(size_t count)
+    {
+        resize(count, T{});
+    }
+
+    void swap(forward_list2& other) noexcept
+    {
+        std::swap(m_list, other.m_list);
+        std::swap(m_last, other.m_last);
+    }
+
+    friend bool operator==(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list == rhs.m_list;
+    }
 
 private:
     void insert_to_empty(size_t count, const T& value)
