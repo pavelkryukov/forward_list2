@@ -234,16 +234,16 @@ private:
         m_last = m_list.before_begin();
     }
 
-    void adjust_last_iterator_on_insertion(const const_iterator& insert_pos, const iterator& final_pos)
+    void adjust_last_iterator_on_insertion(const const_iterator& first, const iterator& last)
     {
-        if (insert_pos == m_last)
-            m_last = final_pos;
+        if (first == m_last)
+            m_last = last;
     }
 
-    void adjust_last_iterator_on_deletion(const const_iterator& first_pos, const const_iterator& final_pos)
+    void adjust_last_iterator_on_deletion(const const_iterator& first, const const_iterator& last)
     {
-        if (final_pos == cend())
-            m_last = first_pos;
+        if (last == cend())
+            m_last = first;
     }
 
     Base           m_list;
