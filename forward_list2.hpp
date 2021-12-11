@@ -39,46 +39,46 @@ public:
     using const_iterator  = typename Base::const_iterator;
 
     forward_list2() :
-        m_list(), m_last(m_list.before_begin())
+        m_list()
     {
-
+        init_last_on_clear_container();
     }
 
     explicit forward_list2(const Allocator& alloc) :
-        m_list(alloc), m_last(m_list.before_begin())
+        m_list(alloc)
     {
-
+        init_last_on_clear_container();
     }
 
     forward_list2(size_type count, const T& value, const Allocator& alloc = Allocator()) :
         forward_list2(alloc)
     {
-        m_last = m_list.insert_after(m_last, count, value);
+        insert_to_empty(count, value);
     }
 
     template<class InputIt>
     forward_list2(InputIt first, InputIt last, const Allocator& alloc = Allocator()) :
         forward_list2(alloc)
     {
-        m_last = m_list.insert_after(m_last, first, last);
+        insert_to_empty(first, last);
     }
 
     forward_list2(const forward_list2& other) : 
-        forward_list2(std::allocator_traits<allocator_type>::select_on_container_copy_construction(other.m_list.get_allocator()))
+        forward_list2(std::allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()))
     {
-        m_last = m_list.insert_after(m_last, other.begin(), other.end());
+        insert_to_empty(other.begin(), other.end());
     }
 
     forward_list2(const forward_list2& other, const Allocator& alloc) : 
         forward_list2(alloc)
     {
-        m_last = m_list.insert_after(m_last, other.begin(), other.end());
+        insert_to_empty(other.begin(), other.end());
     }
 
     forward_list2(forward_list2&& other) :
         m_list(std::move(other.m_list)), m_last(std::move(other.m_last))
     {
-        other.clear();
+        other.init_last_on_clear_container();
     }
 
     forward_list2(forward_list2&& other, const Allocator& alloc) :
@@ -93,46 +93,36 @@ public:
     forward_list2(std::initializer_list<T> init, const Allocator& alloc = Allocator()) :
         forward_list2(alloc)
     {
-        m_last = m_list.insert_after(before_begin(), init.begin(), init.end());
+        insert_to_empty(init);
     }
 
-    void clear() noexcept
+    ~forward_list2() = default;
+
+    void assign(size_t count, const T& value)
     {
         m_list.clear();
-        m_last = m_list.before_begin();
-    }
-
-    iterator insert_after(const_iterator pos, const T& value )
-    {
-        auto inserted_pointer = m_list.insert_after(pos, value);
-        if (pos == m_last)
-            m_last = inserted_pointer;
-
-        return inserted_pointer;
-    }
-
-    iterator insert_after(const_iterator pos, size_type count, const T& value)
-    {
-        auto inserted_pointer = m_list.insert_after(pos, count, value);
-        if (pos == m_last)
-            m_last = inserted_pointer;
-
-        return inserted_pointer;
+        insert_to_empty(count, value);
     }
 
     template<class InputIt>
-    iterator insert_after(const_iterator pos, InputIt first, InputIt last)
+    void assign(InputIt first, InputIt last)
     {
-        auto inserted_pointer = m_list.insert_after(pos, first, last);
-        if (pos == m_last)
-            m_last = inserted_pointer;
-
-        return inserted_pointer;
+        m_list.clear();
+        insert_to_empty(first, last);
     }
+
+    void assign(std::initializer_list<T> ilist )
+    {
+        m_list.clear();
+        insert_to_empty(ilist);
+    }
+
+    allocator_type get_allocator() const noexcept { return m_list.get_allocator(); }
 
     reference front()             { return *begin(); }
     const_reference front() const { return *begin(); }
 
+    // New!
     reference back()             { return *before_end(); }
     const_reference back() const { return *before_end(); }
 
@@ -144,6 +134,7 @@ public:
     const_iterator begin()  const noexcept { return m_list.begin(); }
     const_iterator cbegin() const noexcept { return m_list.cbegin(); }
 
+    // New!
     iterator before_end()              noexcept { return m_last; }
     const_iterator before_end()  const noexcept { return m_last; }
     const_iterator cbefore_end() const noexcept { return m_last; }
@@ -152,9 +143,82 @@ public:
     const_iterator end()  const noexcept { return m_list.end(); }
     const_iterator cend() const noexcept { return m_list.cend(); }
 
-    bool empty() const { return m_list.empty(); }
+    bool empty() const noexcept { return m_list.empty(); }
+    size_type max_size() const noexcept { return m_list.last_size(); }
+
+    void clear() noexcept
+    {
+        m_list.clear();
+        init_last_on_clear_container();
+    }
+
+    iterator insert_after(const_iterator pos, const T& value )
+    {
+        auto last_pos = m_list.insert_after(pos, value);
+        adjust_last_iterator_on_insertion(pos, last_pos);
+        return last_pos;
+    }
+
+    iterator insert_after(const_iterator pos, size_type count, const T& value)
+    {
+        auto last_pos = m_list.insert_after(pos, count, value);
+        adjust_last_iterator_on_insertion(pos, last_pos);
+        return last_pos;
+    }
+
+    template<class InputIt>
+    iterator insert_after(const_iterator pos, InputIt first, InputIt last)
+    {
+        auto last_pos = m_list.insert_after(pos, first, last);
+        adjust_last_iterator_on_insertion(pos, last_pos);
+        return last_pos;
+    }
+
+    template<class... Args>
+    iterator emplace_after(const_iterator pos, Args&&... args)
+    {
+        auto last_pos = m_list.emplace_after(pos, std::forward<Args>(args)...);
+        adjust_last_iterator_on_insertion(pos, last_pos);
+        return last_pos;
+    }
+
+    // FIXME: must be a const_iterator input!
+    iterator erase_after(iterator pos)
+    {
+        if (std::next(pos) == m_last)
+            m_last = pos;
+
+        return m_list.erase_after(pos);
+    }
 
 private:
+    void insert_to_empty(size_t count, const T& value)
+    {
+        m_last = m_list.insert_after(m_list.before_begin(), count, value);
+    }
+
+    template<class InputIt>
+    void insert_to_empty(InputIt first, InputIt last)
+    {
+        m_last = m_list.insert_after(m_list.before_begin(), first, last);
+    }
+
+    void insert_to_empty(const std::initializer_list<T>& init)
+    {
+        m_last = m_list.insert_after(before_begin(), init.begin(), init.end());
+    }
+
+    void init_last_on_clear_container() noexcept
+    {
+        m_last = m_list.before_begin();
+    }
+
+    void adjust_last_iterator_on_insertion(const const_iterator& insert_pos, const iterator& final_pos)
+    {
+        if (insert_pos == m_last)
+            m_last = final_pos;
+    }
+
     Base     m_list;
     iterator m_last;
 };

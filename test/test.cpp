@@ -133,6 +133,39 @@ TEST_CASE("list move")
     check_ranged_list(l2, 5);
 }
 
+TEST_CASE("assign empty")
+{
+    forward_list2<int> l({ 2, 3, 1, 8 });
+    l.assign(0, 100);
+
+    check_empty_list(l);
+}
+
+TEST_CASE("assign count")
+{
+    forward_list2<int> l({ 2, 3, 1, 8 });
+    l.assign(1, 1);
+
+    check_ranged_list(l, 1);
+}
+
+TEST_CASE("assign vector")
+{
+    const std::vector<int> v{1, 2, 3, 4, 5, 6};
+    forward_list2<int> l({ 2, 3, 1, 8 });
+    l.assign(v.begin(), v.end());
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("assign init-list")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5});
+    l.assign({ 1, 2, 3 });
+
+    check_ranged_list(l, 3);
+}
+
 TEST_CASE("insert back")
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5 });
@@ -179,6 +212,54 @@ TEST_CASE("insert nothing")
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5});
     l.insert_after(l.begin(), 0, 100);
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("emplace begin")
+{
+    forward_list2<int> l({ 2, 3, 4, 5});
+    l.emplace_after(l.before_begin(), 1);
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("emplace middle")
+{
+    forward_list2<int> l({ 1, 3, 4, 5});
+    l.emplace_after(l.begin(), 2);
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("emplace end")
+{
+    forward_list2<int> l({ 1, 2, 3, 4});
+    l.emplace_after(l.before_end(), 5);
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("erase begin")
+{
+    forward_list2<int> l({ 7, 1, 2, 3, 4, 5});
+    l.erase_after(l.before_begin());
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("erase middle")
+{
+    forward_list2<int> l({ 1, 7, 2, 3, 4, 5});
+    l.erase_after(l.begin());
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("erase end")
+{
+    forward_list2<int> l({ 1, 2, 3, 4, 5, 8});
+    l.erase_after(std::next(l.before_begin(), 5));
 
     check_ranged_list(l, 5);
 }
