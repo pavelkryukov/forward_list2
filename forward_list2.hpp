@@ -44,13 +44,13 @@ public:
     forward_list2() :
         m_list()
     {
-        init_last_on_clear_container();
+        adjust_last_iterator_on_clear();
     }
 
     explicit forward_list2(const Allocator& alloc) :
         m_list(alloc)
     {
-        init_last_on_clear_container();
+        adjust_last_iterator_on_clear();
     }
 
     forward_list2(size_type count, const T& value, const Allocator& alloc = Allocator()) :
@@ -81,7 +81,7 @@ public:
     forward_list2(forward_list2&& other) :
         m_list(std::move(other.m_list)), m_last(std::move(other.m_last))
     {
-        other.init_last_on_clear_container();
+        other.adjust_last_iterator_on_clear();
     }
 
     forward_list2(forward_list2&& other, const Allocator& alloc) :
@@ -152,7 +152,7 @@ public:
     void clear() noexcept
     {
         m_list.clear();
-        init_last_on_clear_container();
+        adjust_last_iterator_on_clear();
     }
 
     iterator insert_after(const_iterator pos, const T& value )
@@ -215,7 +215,7 @@ public:
 
     void pop_front() { erase_after(before_begin()); }
     
-    void resize(size_t count, const T& value)
+    void resize(size_type count, const T& value)
     {
         auto it = before_begin();
         for (size_type i = 0; i < count; ++i, ++it) {
@@ -228,7 +228,7 @@ public:
         erase_after(it, end());
     }
 
-    void resize(size_t count)
+    void resize(size_type count)
     {
         resize(count, T{});
     }
@@ -237,6 +237,36 @@ public:
     {
         std::swap(m_list, other.m_list);
         std::swap(m_last, other.m_last);
+    }
+
+    void merge(forward_list2& other)
+    {
+        m_list.merge(other.m_list);
+        adjust_last_iterator_on_merge(other.m_last);
+        other.adjust_last_iterator_on_clear();
+    }
+
+    void merge(forward_list2&& other)
+    {
+        m_list.merge(std::move(other.m_list));
+        adjust_last_iterator_on_merge(other.m_last);
+        other.adjust_last_iterator_on_clear();
+    }
+
+    template <class Compare>
+    void merge(forward_list2& other, Compare comp)
+    {
+        m_list.merge(other.m_list, comp);
+        adjust_last_iterator_on_merge(other.m_last);
+        other.adjust_last_iterator_on_clear();
+    }
+
+    template <class Compare>
+    void merge(forward_list2&& other, Compare comp)
+    {
+        m_list.merge(std::move(other.m_list), comp);
+        adjust_last_iterator_on_merge(other.m_last);
+        other.adjust_last_iterator_on_clear();
     }
 
     friend bool operator==(const forward_list2& lhs, const forward_list2& rhs)
@@ -261,7 +291,7 @@ private:
         m_last = m_list.insert_after(before_begin(), init.begin(), init.end());
     }
 
-    void init_last_on_clear_container() noexcept
+    void adjust_last_iterator_on_clear() noexcept
     {
         m_last = m_list.before_begin();
     }
@@ -276,6 +306,12 @@ private:
     {
         if (last == cend())
             m_last = first;
+    }
+
+    void adjust_last_iterator_on_merge(const const_iterator& other_last)
+    {
+        if (std::next(m_last) != cend())
+            m_last = other_last;
     }
 
     Base           m_list;

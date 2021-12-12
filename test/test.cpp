@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <iostream>
 #include "../forward_list2.hpp"
 
 #include "catch.hpp"
@@ -390,4 +391,22 @@ TEST_CASE("swap")
 
     check_ranged_list(l1, 2);
     check_ranged_list(l2, 7);
+}
+
+TEST_CASE("merge")
+{
+    forward_list2<int> l1({ 1, 3, 5, 6, 7 });
+    forward_list2<int> l2({ 2, 4, 8, 9 });
+
+    l1.merge(l2);
+    check_ranged_list(l1, 9);
+    check_empty_list(l2);
+}
+
+TEST_CASE("merge_move")
+{
+    forward_list2<int> l({ 1, 3, 5, 6, 7 });
+
+    l.merge(forward_list2<int>({ 2, 4, 8, 9 }));
+    check_ranged_list(l, 9);
 }
