@@ -269,6 +269,48 @@ public:
         other.adjust_last_iterator_on_clear();
     }
 
+    void splice_after(const_iterator pos, forward_list2& other)
+    {
+        m_list.splice_after(pos, std::move(other.m_list));
+        adjust_last_iterator_on_insertion(pos, other.m_last);
+        other.adjust_last_iterator_on_clear();
+    }
+
+    void splice_after(const_iterator pos, forward_list2&& other)
+    {
+        m_list.splice_after(pos, std::move(other.m_list));
+        adjust_last_iterator_on_insertion(pos, other.m_last);
+        other.adjust_last_iterator_on_clear();
+    }
+
+    void splice_after(const_iterator pos, forward_list2& other, const_iterator it)
+    {
+        m_list.splice_after(pos, other.m_list, it);
+        adjust_last_iterator_on_insertion(pos, it);
+        other.adjust_last_iterator_on_deletion(it, std::next(it));
+    }
+
+    void splice_after(const_iterator pos, forward_list2&& other, const_iterator it)
+    {
+        m_list.splice_after(pos, std::move(other.m_list), it);
+        adjust_last_iterator_on_insertion(pos, it);
+        other.adjust_last_iterator_on_deletion(it, std::next(it));
+    }
+
+    void splice_after(const_iterator pos, forward_list2& other, const_iterator first, const_iterator last)
+    {
+        m_list.splice_after(pos, other.m_list, first, last);
+        adjust_last_iterator_on_insertion(pos, last);
+        other.adjust_last_iterator_on_deletion(first, last);
+    }
+
+    void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last)
+    {
+        m_list.splice_after(pos, std::move(other.m_list), first, last);
+        adjust_last_iterator_on_insertion(pos, last);
+        other.adjust_last_iterator_on_deletion(first, last);
+    }
+
     friend bool operator==(const forward_list2& lhs, const forward_list2& rhs)
     {
         return lhs.m_list == rhs.m_list;
@@ -296,7 +338,7 @@ private:
         m_last = m_list.before_begin();
     }
 
-    void adjust_last_iterator_on_insertion(const const_iterator& first, const iterator& last)
+    void adjust_last_iterator_on_insertion(const const_iterator& first, const const_iterator& last)
     {
         if (first == m_last)
             m_last = last;

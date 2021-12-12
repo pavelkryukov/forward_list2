@@ -402,10 +402,69 @@ TEST_CASE("merge")
     check_empty_list(l2);
 }
 
-TEST_CASE("merge_move")
+TEST_CASE("merge move")
 {
-    forward_list2<int> l({ 1, 3, 5, 6, 7 });
+    forward_list2<int> l({ 2, 4, 8, 9 });
 
-    l.merge(forward_list2<int>({ 2, 4, 8, 9 }));
+    l.merge(forward_list2<int>({ 1, 3, 5, 6, 7 }));
     check_ranged_list(l, 9);
+}
+
+TEST_CASE("splice whole")
+{
+    forward_list2<int> l1({ 1, 5, 6, 7 });
+    forward_list2<int> l2({ 2, 3, 4 });
+
+    l1.splice_after(l1.begin(), l2);
+    check_ranged_list(l1, 7);
+    check_empty_list(l2);
+}
+
+TEST_CASE("splice whole move")
+{
+    forward_list2<int> l({ 1, 5, 6, 7 });
+
+    l.splice_after(l.begin(), forward_list2<int>({ 2, 3, 4 }));
+    check_ranged_list(l, 7);
+}
+
+TEST_CASE("splice one")
+{
+    forward_list2<int> l1({ 1, 3, 4, 5 });
+    forward_list2<int> l2({ 1, 2, 2, 3, 4 });
+
+    l1.splice_after(l1.begin(), l2, l2.begin());
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 4);
+}
+
+TEST_CASE("splice one from end")
+{
+    forward_list2<int> l1({ 1, 3, 4, 5 });
+    forward_list2<int> l2({ 1, 2, 3, 4, 2 });
+
+    l1.splice_after(l1.begin(), l2, std::next(l2.begin(), 3));
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 4);
+}
+
+TEST_CASE("splice")
+{
+    forward_list2<int> l1({ 1, 5 });
+    forward_list2<int> l2({ 1, 2, 3, 4, 2 });
+
+    l1.splice_after(l1.begin(), l2, l2.begin(), l2.before_end());
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 2);
+}
+
+
+TEST_CASE("splice from end")
+{
+    forward_list2<int> l1({ 1, 5 });
+    forward_list2<int> l2({ 1, 2, 2, 3, 4 });
+
+    l1.splice_after(l1.begin(), l2, std::next(l2.begin()), l2.end());
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 2);
 }
