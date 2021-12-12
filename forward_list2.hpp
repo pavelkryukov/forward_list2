@@ -285,29 +285,45 @@ public:
 
     void splice_after(const_iterator pos, forward_list2& other, const_iterator it)
     {
+        if (pos == m_last && it == other.m_last)
+            m_last = it;
+        else
+            adjust_last_iterator_on_insertion(pos, std::next(it));
+
         m_list.splice_after(pos, other.m_list, it);
-        adjust_last_iterator_on_insertion(pos, it);
         other.adjust_last_iterator_on_deletion(it, std::next(it));
     }
 
     void splice_after(const_iterator pos, forward_list2&& other, const_iterator it)
     {
+        if (pos == m_last && it == other.m_last)
+            m_last = it;
+        else
+            adjust_last_iterator_on_insertion(pos, it);
+
         m_list.splice_after(pos, std::move(other.m_list), it);
-        adjust_last_iterator_on_insertion(pos, it);
         other.adjust_last_iterator_on_deletion(it, std::next(it));
     }
 
     void splice_after(const_iterator pos, forward_list2& other, const_iterator first, const_iterator last)
     {
+        if (pos == m_last && last == other.end())
+            m_last = other.m_last;
+        else
+            adjust_last_iterator_on_insertion(pos, last);
+
         m_list.splice_after(pos, other.m_list, first, last);
-        adjust_last_iterator_on_insertion(pos, last);
         other.adjust_last_iterator_on_deletion(first, last);
     }
 
     void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last)
     {
+        if (pos == m_last && last == other.end())
+            m_last = other.m_last;
+        else
+            adjust_last_iterator_on_insertion(pos, last);
+
         m_list.splice_after(pos, std::move(other.m_list), first, last);
-        adjust_last_iterator_on_insertion(pos, last);
         other.adjust_last_iterator_on_deletion(first, last);
     }
 

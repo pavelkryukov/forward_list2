@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <iostream>
 #include "../forward_list2.hpp"
 
 #include "catch.hpp"
@@ -458,7 +459,6 @@ TEST_CASE("splice")
     check_ranged_list(l2, 2);
 }
 
-
 TEST_CASE("splice from end")
 {
     forward_list2<int> l1({ 1, 5 });
@@ -467,4 +467,26 @@ TEST_CASE("splice from end")
     l1.splice_after(l1.begin(), l2, std::next(l2.begin()), l2.end());
     check_ranged_list(l1, 5);
     check_ranged_list(l2, 2);
+}
+
+TEST_CASE("splice to end")
+{
+    forward_list2<int> l1{ 1, 2, 3, 4 };
+    forward_list2<int> l2{ 1, 5 };
+
+    l1.splice_after(l1.before_end(), l2, l2.begin());
+    
+    CHECK(l1 == forward_list2<int>{ 1, 2, 3, 4, 5 });
+    CHECK(l2 == forward_list2<int>{ 1 });
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 1);
+}
+
+TEST_CASE("splice self")
+{
+    forward_list2<int> l({ 1, 5, 2, 3, 4});
+
+    l.splice_after(l.before_end(), l, l.begin());
+    CHECK(l == forward_list2<int>{ 1, 2, 3, 4, 5 });
+    check_ranged_list(l, 5);
 }
