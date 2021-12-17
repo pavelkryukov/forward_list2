@@ -307,24 +307,18 @@ public:
 
     void splice_after(const_iterator pos, forward_list2& other, const_iterator first, const_iterator last)
     {
-        if (pos == m_last && last == other.end())
-            m_last = other.m_last;
-        else
-            adjust_last_iterator_on_insertion(pos, last);
-
-        m_list.splice_after(pos, other.m_list, first, last);
-        other.adjust_last_iterator_on_deletion(first, last);
+        while (std::next(first) != last) {
+            splice_after(pos, other, first);
+            ++pos;
+        }
     }
 
     void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last)
     {
-        if (pos == m_last && last == other.end())
-            m_last = other.m_last;
-        else
-            adjust_last_iterator_on_insertion(pos, last);
-
-        m_list.splice_after(pos, std::move(other.m_list), first, last);
-        other.adjust_last_iterator_on_deletion(first, last);
+        while (std::next(first) != last) {
+            splice_after(pos, other, first);
+            ++pos;
+        }
     }
 
     friend bool operator==(const forward_list2& lhs, const forward_list2& rhs)

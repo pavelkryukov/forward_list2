@@ -455,6 +455,8 @@ TEST_CASE("splice")
     forward_list2<int> l2({ 1, 2, 3, 4, 2 });
 
     l1.splice_after(l1.begin(), l2, l2.begin(), l2.before_end());
+    CHECK(l1 == forward_list2<int>{ 1, 2, 3, 4, 5 });
+
     check_ranged_list(l1, 5);
     check_ranged_list(l2, 2);
 }
@@ -475,18 +477,23 @@ TEST_CASE("splice to end")
     forward_list2<int> l2{ 1, 5 };
 
     l1.splice_after(l1.before_end(), l2, l2.begin());
-    
-    CHECK(l1 == forward_list2<int>{ 1, 2, 3, 4, 5 });
-    CHECK(l2 == forward_list2<int>{ 1 });
+
     check_ranged_list(l1, 5);
     check_ranged_list(l2, 1);
 }
 
-TEST_CASE("splice self")
+TEST_CASE("splice one to self")
 {
     forward_list2<int> l({ 1, 5, 2, 3, 4});
 
     l.splice_after(l.before_end(), l, l.begin());
-    CHECK(l == forward_list2<int>{ 1, 2, 3, 4, 5 });
     check_ranged_list(l, 5);
+}
+
+TEST_CASE("splice range to self")
+{
+    forward_list2<int> l({ 1, 5, 6, 7, 2, 3, 4});
+
+    l.splice_after(l.before_end(), l, l.begin(), std::next(l.begin(), 4));
+    check_ranged_list(l, 7);
 }
