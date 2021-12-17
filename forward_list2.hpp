@@ -22,7 +22,8 @@
  
 #ifndef FORWARD_LIST_2_HPP
 #define FORWARD_LIST_2_HPP
- 
+
+#include <algorithm>
 #include <forward_list>
 
 template<typename T, class Allocator = std::allocator<T>>
@@ -299,23 +300,113 @@ public:
 
     void splice_after(const_iterator pos, forward_list2& other, const_iterator first, const_iterator last)
     {
-        while (std::next(first) != last) {
+        for (; std::next(first) != last; ++pos)
             splice_after(pos, other, first);
-            ++pos;
-        }
     }
 
     void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last)
     {
-        while (std::next(first) != last) {
+        for (; std::next(first) != last; ++pos)
             splice_after(pos, std::move(other), first);
-            ++pos;
+    }
+
+    void remove(const T& value)
+    {
+        for (auto it = before_begin(); it != before_end();) {
+            auto next = std::next(it);
+            if (*next == value)
+                erase_after(it);
+            else
+                it = next;
         }
+    }
+
+    template<typename UnaryPredicate>
+    void remove_if(UnaryPredicate p)
+    {
+        for (auto it = before_begin(); it != before_end();) {
+            auto next = std::next(it);
+            if (p(*next))
+                erase_after(it);
+            else
+                it = next;
+        }
+    }
+
+    void reverse() noexcept
+    {
+        m_last = begin();
+        m_list.reverse();
+    }
+
+    void unique()
+    {
+        for (auto it = begin(); it != before_end();) {
+            auto next = std::next(it);
+            if (*next == *it)
+                erase_after(it);
+            else
+                it = next;
+        }
+    }
+
+    template<typename BinaryPredicate>
+    void unique(BinaryPredicate b)
+    {
+        for (auto it = begin(); it != before_end();) {
+            auto next = std::next(it);
+            if (b(*next, *it))
+                erase_after(it);
+            else
+                it = next;
+        }
+    }
+
+    void sort()
+    {
+        // It is compliant to standard since O(N log N) + O(N) => O(N log N)
+        // But I agree it is not the greatest implementation
+        m_last = std::max_element(begin(), end());
+        m_list.sort();
+    }
+
+    template<typename Compare>
+    void sort(Compare c)
+    {
+        // It is compliant to standard since O(N log N) + O(N) => O(N log N)
+        // But I agree it is not the greatest implementation
+        m_last = std::max_element(begin(), end(), c);
+        m_list.sort(c);
     }
 
     friend bool operator==(const forward_list2& lhs, const forward_list2& rhs)
     {
         return lhs.m_list == rhs.m_list;
+    }
+
+    friend bool operator!=(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list != rhs.m_list;
+    }
+
+    friend bool operator<(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list < rhs.m_list;
+    }
+
+    friend bool operator<=(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list <= rhs.m_list;
+    }
+
+    friend bool operator>(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list > rhs.m_list;
+    }
+
+    friend bool operator>=(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list >= rhs.m_list;
     }
 
 private:
@@ -361,5 +452,26 @@ private:
     Base           m_list;
     const_iterator m_last;
 };
+
+namespace std
+{
+    template<typename T, typename Alloc>
+    void swap(forward_list2<T, Alloc>& lhs, forward_list2<T, Alloc>& rhs)
+    {
+        lhs.swap(rhs);
+    }
+
+    template<typename T, typename Alloc, typename U>
+    auto erase(forward_list2<T, Alloc>& c, const U& value)
+    {
+        return c.remove_if([&](auto& x){ return x == value; });
+    }
+
+    template<typename T, typename Alloc, typename Predicate>
+    auto erase_if(forward_list2<T, Alloc>& c, Predicate p)
+    {
+        return c.remove_if(p);
+    }
+}
 
 #endif // FORWARD_LIST_2_HPP

@@ -56,8 +56,9 @@ static void check_ranged_list(forward_list2<int>& l, size_t range)
         CHECK(i == count);
     }
 
+    CHECK(l != forward_list2<int>{});
     CHECK(count == range);
-    CHECK(!l.empty());
+    CHECK_FALSE(l.empty());
     CHECK(l.front() == 1);
     CHECK(l.back() == range);
     CHECK(std::as_const(l).front() == 1);
@@ -105,7 +106,6 @@ TEST_CASE("init-list list")
 
     check_ranged_list(l, 5);
 }
-
 
 TEST_CASE("list copy")
 {
@@ -393,6 +393,16 @@ TEST_CASE("swap")
     check_ranged_list(l2, 7);
 }
 
+TEST_CASE("std swap")
+{
+    forward_list2<int> l1({ 1, 2, 3, 4, 5, 6, 7 });
+    forward_list2<int> l2({ 1, 2 });
+    std::swap(l2, l1);
+
+    check_ranged_list(l1, 2);
+    check_ranged_list(l2, 7);
+}
+
 TEST_CASE("merge")
 {
     forward_list2<int> l1({ 1, 3, 5, 6, 7 });
@@ -540,4 +550,97 @@ TEST_CASE("splice range to self")
 
     l.splice_after(l.before_end(), l, l.begin(), std::next(l.begin(), 4));
     check_ranged_list(l, 7);
+}
+
+TEST_CASE("remove")
+{
+    forward_list2<int> l({ 1, 0, 2, 0, 3, 0});
+    l.remove(0);
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("std erase")
+{
+    forward_list2<int> l({ 1, 0, 2, 0, 3, 0});
+    std::erase(l, 0);
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("remove predicate")
+{
+    forward_list2<int> l({ 1, -4, 2, -5, 3, -6});
+    l.remove_if([](int x){ return x < 0; });
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("std erase if")
+{
+    forward_list2<int> l({ 1, -4, 2, -5, 3, -6});
+    std::erase_if(l, [](int x){ return x < 0; });
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("reverse")
+{
+    forward_list2<int> l{ 5, 4, 3, 2, 1};
+    l.reverse();
+
+    check_ranged_list(l, 5);
+}
+
+TEST_CASE("unique")
+{
+    forward_list2<int> l{ 1, 1, 1, 2, 3, 3, 3, 4, 4, 4, 4};
+    l.unique();
+
+    check_ranged_list(l, 4);
+}
+
+TEST_CASE("unique predicate")
+{
+    forward_list2<int> l({ 1, -1, 2, -2, 3, -3});
+    l.unique([](int x, int y){ return std::abs(x) == std::abs(y); });
+
+    check_ranged_list(l, 3);
+}
+
+TEST_CASE("sort")
+{
+    forward_list2<int> l({ 5, 6, 1, 3, 2, 4 });
+    l.sort();
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("sort reverse")
+{
+    forward_list2<int> l({ 5, 6, 1, 3, 2, 4 });
+    l.sort([](int x, int y){ return x > y; });
+    l.reverse();
+
+    check_ranged_list(l, 6);
+}
+
+TEST_CASE("spaceship")
+{
+    forward_list2<int> a{1, 2, 3};
+    forward_list2<int> b{4, 5, 6};
+
+    CHECK_FALSE(a == b);
+    CHECK(a != b);
+    CHECK(a < b);
+    CHECK(a <= b);
+    CHECK_FALSE(a > b);
+    CHECK_FALSE(a >= b);
+
+    CHECK(a == a);
+    CHECK_FALSE(a != a);
+    CHECK_FALSE(a < a);
+    CHECK_FALSE(a > a);
+    CHECK(a >= a);
+    CHECK(a <= a);
 }
