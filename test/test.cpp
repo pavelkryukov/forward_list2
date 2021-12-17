@@ -459,6 +459,29 @@ TEST_CASE("splice one from end move")
     check_ranged_list(l2, 4);
 }
 
+TEST_CASE("splice one to end")
+{
+    forward_list2<int> l1{ 1, 2, 3, 4 };
+    forward_list2<int> l2{ 1, 5 };
+
+    l1.splice_after(l1.before_end(), l2, l2.begin());
+
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 1);
+}
+
+TEST_CASE("splice one to end move")
+{
+    forward_list2<int> l1{ 1, 2, 3, 4 };
+    forward_list2<int> l2{ 1, 5 };
+
+    l1.splice_after(l1.before_end(), std::move(l2), l2.begin());
+
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 1);
+}
+
+
 TEST_CASE("splice")
 {
     forward_list2<int> l1({ 1, 5 });

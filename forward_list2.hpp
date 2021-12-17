@@ -316,7 +316,7 @@ public:
     void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last)
     {
         while (std::next(first) != last) {
-            splice_after(pos, other, first);
+            splice_after(pos, std::move(other), first);
             ++pos;
         }
     }
