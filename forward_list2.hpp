@@ -178,9 +178,16 @@ public:
         adjust_last_iterator_on_clear();
     }
 
-    iterator insert_after(const_iterator pos, const T& value )
+    iterator insert_after(const_iterator pos, const T& value)
     {
         auto last_pos = m_list.insert_after(pos, value);
+        adjust_last_iterator_on_insertion(pos, last_pos);
+        return last_pos;
+    }
+
+    iterator insert_after(const_iterator pos, T&& value)
+    {
+        auto last_pos = m_list.insert_after(pos, std::move(value));
         adjust_last_iterator_on_insertion(pos, last_pos);
         return last_pos;
     }

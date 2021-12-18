@@ -204,6 +204,15 @@ TEST_CASE("insert back")
     check_ranged_list(l, 6);
 }
 
+TEST_CASE("insert back copy")
+{
+    const int six = 6;
+    forward_list2<int> l({ 1, 2, 3, 4, 5 });
+    l.insert_after(l.before_end(), six);
+
+    check_ranged_list(l, 6);
+}
+
 TEST_CASE("insert front")
 {
     forward_list2<int> l({ 2, 3, 4, 5, 6 });
