@@ -170,7 +170,7 @@ public:
     const_iterator cend() const noexcept { return m_list.cend(); }
 
     [[nodiscard]] bool empty() const noexcept { return m_list.empty(); }
-    size_type max_size() const noexcept { return m_list.last_size(); }
+    size_type max_size() const noexcept { return m_list.max_size(); }
 
     void clear() noexcept
     {

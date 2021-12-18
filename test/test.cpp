@@ -31,6 +31,9 @@ static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*));
 
 static void check_iterators(forward_list2<int>& l)
 {
+    CHECK(l.max_size() > 0);
+    CHECK(std::distance(l.begin(), l.end()) < l.max_size());
+    CHECK(std::distance(l.cbefore_begin(), l.cbefore_end()) == std::distance(l.begin(), l.end()));
     CHECK(std::next(l.before_begin()) == l.begin());
     CHECK(std::next(l.before_end()) == l.end());
     CHECK(std::next(l.cbefore_begin()) == l.cbegin());
