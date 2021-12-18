@@ -361,9 +361,11 @@ TEST_CASE("push back to empty")
 TEST_CASE("emplace front and back")
 {
     forward_list2<int> l({ 2 });
-    l.emplace_back(3);
-    l.emplace_front(1);
+    const auto& three = l.emplace_back(3);
+    const auto& one = l.emplace_front(1);
 
+    CHECK(three == 3);
+    CHECK(one == 1);
     check_ranged_list(l, 3);
 }
 

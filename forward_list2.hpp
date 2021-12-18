@@ -110,7 +110,7 @@ public:
     }
 
     forward_list2& operator=(forward_list2&& other)
-        noexcept(std::allocator_traits<Allocator>::is_always_equal::value)
+        noexcept(noexcept(this->m_list.operator=(std::move(other.m_list))))
     {
         m_list = std::move(other.m_list);
         m_last = other.m_last;
@@ -169,7 +169,7 @@ public:
     const_iterator end()  const noexcept { return m_list.end(); }
     const_iterator cend() const noexcept { return m_list.cend(); }
 
-    bool empty() const noexcept { return m_list.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return m_list.empty(); }
     size_type max_size() const noexcept { return m_list.last_size(); }
 
     void clear() noexcept
@@ -237,11 +237,11 @@ public:
     void push_back(T&& value)       { insert_after(before_end(), std::move(value)); }
     
     template<class... Args>
-    void emplace_front(Args&&... args) { emplace_after(before_begin(), std::forward<Args>(args)...); }
+    reference emplace_front(Args&&... args) { return *emplace_after(before_begin(), std::forward<Args>(args)...); }
 
     // New!
     template<class... Args>
-    void emplace_back(Args&&... args) { emplace_after(before_end(), std::forward<Args>(args)...); }
+    reference emplace_back(Args&&... args) { return *emplace_after(before_end(), std::forward<Args>(args)...); }
 
     void pop_front() { erase_after(before_begin()); }
     
@@ -493,6 +493,7 @@ namespace std
 {
     template<typename T, typename Alloc>
     void swap(forward_list2<T, Alloc>& lhs, forward_list2<T, Alloc>& rhs)
+        noexcept(noexcept(lhs.swap(rhs)))
     {
         lhs.swap(rhs);
     }
