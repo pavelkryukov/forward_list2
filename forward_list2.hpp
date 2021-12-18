@@ -413,25 +413,25 @@ private:
         m_last = m_list.before_begin();
     }
 
-    void adjust_last_iterator_on_insertion(const const_iterator& first, const const_iterator& last)
+    void adjust_last_iterator_on_insertion(const const_iterator& first, const const_iterator& last) noexcept
     {
         if (first == m_last)
             m_last = last;
     }
 
-    void adjust_last_iterator_on_deletion(const const_iterator& first, const const_iterator& last)
+    void adjust_last_iterator_on_deletion(const const_iterator& first, const const_iterator& last) noexcept
     {
         if (last == cend())
             m_last = first;
     }
 
-    void adjust_last_iterator_on_merge(const const_iterator& other_last)
+    void adjust_last_iterator_on_merge(const const_iterator& other_last) noexcept
     {
         if (std::next(m_last) != cend())
             m_last = other_last;
     }
 
-    void adjust_last_iterator_linear_time()
+    void adjust_last_iterator_linear_time() noexcept
     {
         m_last = m_list.before_begin();
         while (std::next(m_last) != cend())
