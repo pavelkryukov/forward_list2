@@ -24,6 +24,7 @@
 #define FORWARD_LIST_2_HPP
 
 #include <forward_list>
+#include <functional>
 
 template<typename T, class Allocator = std::allocator<T>>
 class forward_list2
@@ -268,32 +269,16 @@ public:
         std::swap(m_last, other.m_last);
     }
 
-    void merge(forward_list2& other)
-    {
-        m_list.merge(other.m_list);
-        adjust_last_iterator_on_merge(other.m_last);
-        other.adjust_last_iterator_on_clear();
-    }
+    void merge(forward_list2& other)  { merge(other, std::less<T>()); }
+    void merge(forward_list2&& other) { merge(other); }
 
-    void merge(forward_list2&& other)
-    {
-        m_list.merge(std::move(other.m_list));
-        adjust_last_iterator_on_merge(other.m_last);
-        other.adjust_last_iterator_on_clear();
-    }
+    template <class Compare>
+    void merge(forward_list2&& other, Compare comp) { merge(other, comp); }
 
     template <class Compare>
     void merge(forward_list2& other, Compare comp)
     {
         m_list.merge(other.m_list, comp);
-        adjust_last_iterator_on_merge(other.m_last);
-        other.adjust_last_iterator_on_clear();
-    }
-
-    template <class Compare>
-    void merge(forward_list2&& other, Compare comp)
-    {
-        m_list.merge(std::move(other.m_list), comp);
         adjust_last_iterator_on_merge(other.m_last);
         other.adjust_last_iterator_on_clear();
     }
@@ -305,21 +290,7 @@ public:
         other.adjust_last_iterator_on_clear();
     }
 
-    void splice_after(const_iterator pos, forward_list2&& other)
-    {
-        adjust_last_iterator_on_insertion(pos, other.m_last);
-        m_list.splice_after(pos, std::move(other.m_list));
-        other.adjust_last_iterator_on_clear();
-    }
-
     void splice_after(const_iterator pos, forward_list2& other, const_iterator it)
-    {
-        adjust_last_iterator_on_insertion(pos, std::next(it));
-        m_list.splice_after(pos, other.m_list, it);
-        other.adjust_last_iterator_on_deletion(it, std::next(it));
-    }
-
-    void splice_after(const_iterator pos, forward_list2&& other, const_iterator it)
     {
         adjust_last_iterator_on_insertion(pos, std::next(it));
         m_list.splice_after(pos, std::move(other.m_list), it);
@@ -329,14 +300,12 @@ public:
     void splice_after(const_iterator pos, forward_list2& other, const_iterator first, const_iterator last)
     {
         for (; std::next(first) != last; ++pos)
-            splice_after(pos, other, first);
-    }
-
-    void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last)
-    {
-        for (; std::next(first) != last; ++pos)
             splice_after(pos, std::move(other), first);
     }
+
+    void splice_after(const_iterator pos, forward_list2&& other) { splice_after(pos, other); }
+    void splice_after(const_iterator pos, forward_list2&& other, const_iterator it) { splice_after(pos, other, it); }
+    void splice_after(const_iterator pos, forward_list2&& other, const_iterator first, const_iterator last) { splice_after(pos, other, first, last); }
 
     void remove(const T& value)
     {
