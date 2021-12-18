@@ -272,15 +272,15 @@ public:
 
     void splice_after(const_iterator pos, forward_list2& other)
     {
-        m_list.splice_after(pos, std::move(other.m_list));
         adjust_last_iterator_on_insertion(pos, other.m_last);
+        m_list.splice_after(pos, std::move(other.m_list));
         other.adjust_last_iterator_on_clear();
     }
 
     void splice_after(const_iterator pos, forward_list2&& other)
     {
-        m_list.splice_after(pos, std::move(other.m_list));
         adjust_last_iterator_on_insertion(pos, other.m_last);
+        m_list.splice_after(pos, std::move(other.m_list));
         other.adjust_last_iterator_on_clear();
     }
 
@@ -366,8 +366,8 @@ public:
     {
         // It is compliant to standard since O(N log N) + O(N) => O(N log N)
         // But I agree it is not the greatest implementation
-        m_last = std::max_element(begin(), end());
         m_list.sort();
+        adjust_last_iterator_linear_time();
     }
 
     template<typename Compare>
@@ -375,8 +375,8 @@ public:
     {
         // It is compliant to standard since O(N log N) + O(N) => O(N log N)
         // But I agree it is not the greatest implementation
-        m_last = std::max_element(begin(), end(), c);
         m_list.sort(c);
+        adjust_last_iterator_linear_time();
     }
 
     friend bool operator==(const forward_list2& lhs, const forward_list2& rhs)
@@ -447,6 +447,13 @@ private:
     {
         if (std::next(m_last) != cend())
             m_last = other_last;
+    }
+
+    void adjust_last_iterator_linear_time()
+    {
+        m_last = m_list.before_begin();
+        while (std::next(m_last) != cend())
+            ++m_last;
     }
 
     Base           m_list;
