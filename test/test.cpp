@@ -75,20 +75,22 @@ TEST_CASE("empty list")
 
 TEST_CASE("counter-init list")
 {
-    forward_list2<int> l(10, 20);
+    const int value = 20;
+    const size_t size = 10;
+    forward_list2<int> l(size, value);
 
     int count = 0;
     for (auto i : l) {
-        CHECK(i == 20);
+        CHECK(i == value);
         ++count;
     }
 
     CHECK(!l.empty());
-    CHECK(count == 10);
-    CHECK(l.front() == 20);
-    CHECK(l.back() == 20);
-    CHECK(std::as_const(l).front() == 20);
-    CHECK(std::as_const(l).back() == 20);
+    CHECK(count == size);
+    CHECK(l.front() == value);
+    CHECK(l.back() == value);
+    CHECK(std::as_const(l).front() == value);
+    CHECK(std::as_const(l).back() == value);
     check_iterators(l);
 }
 
@@ -116,6 +118,15 @@ TEST_CASE("list copy")
     check_ranged_list(l2, 5);
 }
 
+TEST_CASE("list copy allocator")
+{
+    forward_list2<int> l1({ 1, 2, 3, 4, 5 });
+    forward_list2<int> l2(l1, std::allocator<int>());
+
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 5);
+}
+
 TEST_CASE("list clear")
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
@@ -130,6 +141,15 @@ TEST_CASE("list move")
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = std::move(l1);
+
+    check_empty_list(l1);
+    check_ranged_list(l2, 5);
+}
+
+TEST_CASE("list move allocator")
+{
+    forward_list2<int> l1{ 1, 2, 3, 4, 5 };
+    forward_list2<int> l2(std::move(l1), std::allocator<int>());
 
     check_empty_list(l1);
     check_ranged_list(l2, 5);
@@ -173,8 +193,10 @@ TEST_CASE("assign empty")
 
 TEST_CASE("assign count")
 {
+    const int value = 1;
+    const size_t size = 1;
     forward_list2<int> l({ 2, 3, 1, 8 });
-    l.assign(1, 1);
+    l.assign(size, value);
 
     check_ranged_list(l, 1);
 }
@@ -457,6 +479,31 @@ TEST_CASE("merge move")
     forward_list2<int> l({ 2, 4, 8, 9 });
 
     l.merge(forward_list2<int>({ 1, 3, 5, 6, 7 }));
+    check_ranged_list(l, 9);
+}
+
+TEST_CASE("merge compare")
+{
+    forward_list2<int> l1({ 1, 3, 5, 6, 7 });
+    forward_list2<int> l2({ 2, 4, 8, 9 });
+    l1.reverse();
+    l2.reverse();
+
+    l1.merge(l2, [](int x, int y){ return x > y; });
+    l1.reverse();
+
+    check_ranged_list(l1, 9);
+    check_empty_list(l2);
+}
+
+TEST_CASE("merge move compare")
+{
+    forward_list2<int> l({ 1, 3, 5, 6, 7 });
+    l.reverse();
+
+    l.merge(forward_list2<int>{ 9, 8, 4, 2 }, [](int x, int y){ return x > y; });
+    l.reverse();
+
     check_ranged_list(l, 9);
 }
 
