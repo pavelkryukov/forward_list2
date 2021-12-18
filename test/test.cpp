@@ -779,6 +779,14 @@ TEST_CASE("splice end to end")
     check_ranged_list(l, 4);
 }
 
+TEST_CASE("splice same place")
+{
+    forward_list2<int> l{1, 2, 3, 4};
+    l.splice_after(std::next(l.begin(), 2), l, std::next(l.begin(), 1));
+
+    check_ranged_list(l, 4);
+}
+
 TEST_CASE("splice empty to empty")
 {
     forward_list2<int> l;

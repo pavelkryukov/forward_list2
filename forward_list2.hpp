@@ -118,7 +118,7 @@ public:
         return *this;
     }
 
-    forward_list2& operator=( std::initializer_list<T> ilist)
+    forward_list2& operator=(std::initializer_list<T> ilist)
     {
         assign(ilist);
         return *this;
@@ -137,7 +137,7 @@ public:
         insert_to_empty(first, last);
     }
 
-    void assign(std::initializer_list<T> ilist )
+    void assign(std::initializer_list<T> ilist)
     {
         m_list.clear();
         insert_to_empty(ilist);
@@ -405,7 +405,7 @@ private:
 
     void insert_to_empty(const std::initializer_list<T>& init)
     {
-        m_last = m_list.insert_after(before_begin(), init.begin(), init.end());
+        m_last = m_list.insert_after(m_list.before_begin(), init);
     }
 
     void adjust_last_iterator_on_clear() noexcept
