@@ -743,3 +743,46 @@ TEST_CASE("spaceship")
     CHECK(a >= a);
     CHECK(a <= a);
 }
+
+TEST_CASE("merge empty")
+{
+    forward_list2<int> l1, l2;
+    l1.merge(l2);
+
+    check_empty_list(l1);
+    check_empty_list(l2);
+}
+
+TEST_CASE("merge to empty")
+{
+    forward_list2<int> l;
+    l.merge(forward_list2<int>{1, 2, 3});
+
+    check_ranged_list(l, 3);
+}
+
+#if 0
+TEST_CASE("merge to self")
+{
+    forward_list2<int> l{1, 2, 3, 4};
+    l.merge(l);
+
+    check_ranged_list(l, 4);
+}
+#endif
+
+TEST_CASE("splice end to end")
+{
+    forward_list2<int> l{1, 2, 3, 4};
+    l.splice_after(std::next(l.begin(), 2), l, std::next(l.begin(), 2));
+
+    check_ranged_list(l, 4);
+}
+
+TEST_CASE("splice empty to empty")
+{
+    forward_list2<int> l;
+    l.splice_after(l.before_begin(), l, l.before_begin());
+
+    check_empty_list(l);
+}
