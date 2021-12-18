@@ -23,7 +23,6 @@
 #ifndef FORWARD_LIST_2_HPP
 #define FORWARD_LIST_2_HPP
 
-#include <algorithm>
 #include <forward_list>
 
 template<typename T, class Allocator = std::allocator<T>>

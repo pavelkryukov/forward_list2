@@ -20,7 +20,6 @@
  * SOFTWARE.
  */
 
-#include <iostream>
 #include "../forward_list2.hpp"
 
 #include "catch.hpp"
