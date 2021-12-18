@@ -102,6 +102,28 @@ public:
 
     ~forward_list2() = default;
 
+    forward_list2& operator=(const forward_list2& other)
+    {
+        m_list = other.m_list;
+        adjust_last_iterator_linear_time();
+        return *this;
+    }
+
+    forward_list2& operator=(forward_list2&& other)
+        noexcept(std::allocator_traits<Allocator>::is_always_equal::value)
+    {
+        m_list = std::move(other.m_list);
+        m_last = other.m_last;
+        other.adjust_last_iterator_on_clear();
+        return *this;
+    }
+
+    forward_list2& operator=( std::initializer_list<T> ilist)
+    {
+        assign(ilist);
+        return *this;
+    }
+
     void assign(size_t count, const T& value)
     {
         m_list.clear();

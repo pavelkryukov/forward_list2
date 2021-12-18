@@ -135,6 +135,34 @@ TEST_CASE("list move")
     check_ranged_list(l2, 5);
 }
 
+TEST_CASE("list copy assign")
+{
+    forward_list2<int> l1({ 1, 2, 3, 4, 5 });
+    forward_list2<int> l2{3, 4, 8, 11};
+    l2 = l1;
+
+    check_ranged_list(l1, 5);
+    check_ranged_list(l2, 5);
+}
+
+TEST_CASE("list move assign")
+{
+    forward_list2<int> l1({ 1, 2, 3, 4, 5 });
+    forward_list2<int> l2{3, 4, 8, 11};
+    l2 = std::move(l1);
+
+    check_empty_list(l1);
+    check_ranged_list(l2, 5);
+}
+
+TEST_CASE("list ilist")
+{
+    forward_list2<int> l{3, 4, 8, 11};
+    l = { 1, 2, 3, 4, 5 };
+
+    check_ranged_list(l, 5);
+}
+
 TEST_CASE("assign empty")
 {
     forward_list2<int> l({ 2, 3, 1, 8 });
