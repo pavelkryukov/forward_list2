@@ -383,6 +383,17 @@ TEST_CASE("push back to empty")
     check_ranged_list(l, 1);
 }
 
+TEST_CASE("push copy")
+{
+    int three = 3;
+    int one = 1;
+    forward_list2<int> l({ 2 });
+    l.push_back(three);
+    l.push_front(one);
+
+    check_ranged_list(l, 3);
+}
+
 TEST_CASE("emplace front and back")
 {
     forward_list2<int> l({ 2 });
