@@ -336,16 +336,7 @@ public:
         m_list.reverse();
     }
 
-    void unique()
-    {
-        for (auto it = begin(); it != before_end();) {
-            auto next = std::next(it);
-            if (*next == *it)
-                erase_after(it);
-            else
-                it = next;
-        }
-    }
+    void unique() { return unique(std::equal_to<T>()); }
 
     template<typename BinaryPredicate>
     void unique(BinaryPredicate b)
@@ -359,13 +350,7 @@ public:
         }
     }
 
-    void sort()
-    {
-        // It is compliant to standard since O(N log N) + O(N) => O(N log N)
-        // But I agree it is not the greatest implementation
-        m_list.sort();
-        adjust_last_iterator_linear_time();
-    }
+    void sort() { sort(std::less<T>()); }
 
     template<typename Compare>
     void sort(Compare c)
