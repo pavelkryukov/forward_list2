@@ -278,6 +278,10 @@ public:
     template <class Compare>
     void merge(forward_list2& other, Compare comp)
     {
+        // Standard does not require this, so do it explicitly
+        if (std::addressof(other) == this)
+            return;
+
         m_list.merge(other.m_list, comp);
         adjust_last_iterator_on_merge(other.m_last);
         other.adjust_last_iterator_on_clear();

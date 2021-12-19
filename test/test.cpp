@@ -761,7 +761,6 @@ TEST_CASE("merge to empty")
     check_ranged_list(l, 3);
 }
 
-#if 0
 TEST_CASE("merge to self")
 {
     forward_list2<int> l{1, 2, 3, 4};
@@ -769,7 +768,6 @@ TEST_CASE("merge to self")
 
     check_ranged_list(l, 4);
 }
-#endif
 
 TEST_CASE("splice end to end")
 {
