@@ -33,3 +33,7 @@ static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*));
 ### Limitations
 
 * No `reference back();` is available since it would require passing non-constant iterator to `erase_after`.
+
+### Impact
+
+* Identified and fixed [PR libstdc++/103853](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=103853).
