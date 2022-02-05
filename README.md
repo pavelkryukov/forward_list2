@@ -22,7 +22,7 @@ reference emplace_back(Args&&... args);
 ```
 
 ### Price
-* Compute time overheads to maintain the iterator the last element.
+* Compute time overheads to maintain the iterator to the last element.
 * Extra O(N) traversals on copy assignment and sorting.
 * Memory size overhead on empty container:
 ```c++
