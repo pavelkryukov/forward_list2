@@ -26,6 +26,20 @@
 
 #include <utility>
 
+#ifdef __cpp_lib_as_const
+
+using std::as_const;
+
+#else
+
+template <class T>
+constexpr typename std::add_const<T>::type& as_const(T& t) noexcept
+{
+    return t;
+}
+
+#endif
+
 static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*));
 
 static void check_iterators(forward_list2<int>& l)
@@ -37,8 +51,8 @@ static void check_iterators(forward_list2<int>& l)
     CHECK(std::next(l.before_end()) == l.end());
     CHECK(std::next(l.cbefore_begin()) == l.cbegin());
     CHECK(std::next(l.cbefore_end()) == l.cend());
-    CHECK(std::next(std::as_const(l).before_begin()) == std::as_const(l).begin());
-    CHECK(std::next(std::as_const(l).before_end()) == std::as_const(l).end());
+    CHECK(std::next(as_const(l).before_begin()) == as_const(l).begin());
+    CHECK(std::next(as_const(l).before_end()) == as_const(l).end());
 }
 
 static void check_empty_list(forward_list2<int>& l)
@@ -63,8 +77,8 @@ static void check_ranged_list(forward_list2<int>& l, size_t range)
     CHECK_FALSE(l.empty());
     CHECK(l.front() == 1);
     CHECK(l.back() == range);
-    CHECK(std::as_const(l).front() == 1);
-    CHECK(std::as_const(l).back() == range);
+    CHECK(as_const(l).front() == 1);
+    CHECK(as_const(l).back() == range);
     check_iterators(l);
 }
 
@@ -91,8 +105,8 @@ TEST_CASE("counter-init list")
     CHECK(count == size);
     CHECK(l.front() == value);
     CHECK(l.back() == value);
-    CHECK(std::as_const(l).front() == value);
-    CHECK(std::as_const(l).back() == value);
+    CHECK(as_const(l).front() == value);
+    CHECK(as_const(l).back() == value);
     check_iterators(l);
 }
 
@@ -659,18 +673,19 @@ TEST_CASE("remove")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("std erase")
-{
-    forward_list2<int> l({ 1, 0, 2, 0, 3, 0});
-    std::erase(l, 0);
-
-    check_ranged_list(l, 3);
-}
-
 TEST_CASE("remove predicate")
 {
     forward_list2<int> l({ 1, -4, 2, -5, 3, -6});
     l.remove_if([](int x){ return x < 0; });
+
+    check_ranged_list(l, 3);
+}
+
+#ifdef __cpp_lib_erase_if
+TEST_CASE("std erase")
+{
+    forward_list2<int> l({ 1, 0, 2, 0, 3, 0});
+    std::erase(l, 0);
 
     check_ranged_list(l, 3);
 }
@@ -682,6 +697,7 @@ TEST_CASE("std erase if")
 
     check_ranged_list(l, 3);
 }
+#endif
 
 TEST_CASE("reverse")
 {

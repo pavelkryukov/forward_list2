@@ -370,6 +370,12 @@ public:
         return lhs.m_list == rhs.m_list;
     }
 
+#ifdef __cpp_lib_three_way_comparison
+    friend auto operator<=>(const forward_list2& lhs, const forward_list2& rhs)
+    {
+        return lhs.m_list <=> rhs.m_list;
+    }
+#else
     friend bool operator!=(const forward_list2& lhs, const forward_list2& rhs)
     {
         return lhs.m_list != rhs.m_list;
@@ -394,6 +400,7 @@ public:
     {
         return lhs.m_list >= rhs.m_list;
     }
+#endif
 
 private:
     void insert_to_empty(size_t count, const T& value)
@@ -455,6 +462,7 @@ namespace std
         lhs.swap(rhs);
     }
 
+#ifdef __cpp_lib_erase_if
     template<typename T, typename Alloc, typename U>
     auto erase(forward_list2<T, Alloc>& c, const U& value)
     {
@@ -466,6 +474,7 @@ namespace std
     {
         return c.remove_if(p);
     }
+#endif
 }
 
 #endif // FORWARD_LIST_2_HPP
