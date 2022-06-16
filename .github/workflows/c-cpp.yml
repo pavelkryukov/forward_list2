@@ -9,6 +9,13 @@ on:
 jobs:
   gcc-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        std:
+          - c++11
+          - c++14
+          - c++17
+          - c++2a
     steps:
     - uses: actions/checkout@v2
     - name: Make test
@@ -16,7 +23,7 @@ jobs:
       run: make test
       env:
         CXX: g++
-        CXXFLAGS: '-fprofile-arcs -ftest-coverage -g'
+        CXXFLAGS: '-fprofile-arcs -ftest-coverage -g --std=${{matrix.std}}'
         LDFLAGS: '-lgcov --coverage'
     - name: Run test
       working-directory: test
