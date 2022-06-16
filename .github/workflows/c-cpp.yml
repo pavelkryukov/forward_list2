@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         std:
-          - -std=c++11
-          - -std=c++14
-          - -std=c++17
-          - -std=c++20
+          - c++11
+          - c++14
+          - c++17
+          - c++20
     steps:
     - uses: actions/checkout@v2
     - name: Make test
@@ -23,7 +23,7 @@ jobs:
       run: make test
       env:
         CXX: g++
-        CXXFLAGS: '-fprofile-arcs -ftest-coverage -g -std=${{matrix.std}}'
+        CXXFLAGS: '-fprofile-arcs -ftest-coverage -g --std=${{matrix.std}}'
         LDFLAGS: '-lgcov --coverage'
     - name: Run test
       working-directory: test
