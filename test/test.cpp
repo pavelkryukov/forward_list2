@@ -40,7 +40,7 @@ constexpr typename std::add_const<T>::type& as_const(T& t) noexcept
 
 #endif
 
-static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*));
+static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*), "forward_list2 must be 2 pointers");
 
 static void check_iterators(forward_list2<int>& l)
 {

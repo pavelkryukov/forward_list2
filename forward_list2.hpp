@@ -110,7 +110,9 @@ public:
     }
 
     forward_list2& operator=(forward_list2&& other)
-        noexcept(noexcept(this->m_list.operator=(std::move(other.m_list))))
+#ifdef __cpp_lib_allocator_traits_is_always_equal
+        noexcept(std::allocator_traits<Allocator>::is_always_equal::value)
+#endif
     {
         m_list = std::move(other.m_list);
         m_last = other.m_last;
@@ -124,7 +126,7 @@ public:
         return *this;
     }
 
-    void assign(size_t count, const T& value)
+    void assign(size_type count, const T& value)
     {
         m_list.clear();
         insert_to_empty(count, value);
@@ -403,7 +405,7 @@ public:
 #endif
 
 private:
-    void insert_to_empty(size_t count, const T& value)
+    void insert_to_empty(size_type count, const T& value)
     {
         m_last = m_list.insert_after(m_list.before_begin(), count, value);
     }
