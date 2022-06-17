@@ -26,9 +26,9 @@ jobs:
           - clang++-12
         exclude:
           - std: c++20
-            platform: g++-8
+            compiler: g++-8
           - std: c++20
-            platform: g++-9
+            compiler: g++-9
 
     steps:
     - uses: actions/checkout@v2
