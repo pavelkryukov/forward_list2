@@ -24,6 +24,7 @@ jobs:
           - clang++-10
           - clang++-11
           - clang++-12
+          - clang++-13
         exclude:
           - std: c++20
             compiler: g++-8
