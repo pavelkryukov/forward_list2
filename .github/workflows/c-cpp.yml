@@ -15,14 +15,17 @@ jobs:
           - c++11
           - c++14
           - c++17
-          - c++2a
+          - c++20
+
     steps:
     - uses: actions/checkout@v2
+    - name: Install GCC
+      run: sudo apt-get install g++-10
     - name: Make test
       working-directory: test
       run: make test
       env:
-        CXX: g++
+        CXX: g++-10
         CXXFLAGS: '-fprofile-arcs -ftest-coverage -g --std=${{matrix.std}}'
         LDFLAGS: '-lgcov --coverage'
     - name: Run test
