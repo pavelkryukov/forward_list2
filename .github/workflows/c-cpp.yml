@@ -33,7 +33,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install
-      run: sudo apt-get install ${{matrix.compiler}}
+      run: sudo apt-get install ${{matrix.compiler}} libgtest-dev
     - name: Make test
       working-directory: test
       run: make test
@@ -47,11 +47,16 @@ jobs:
     - name: Codecov
       working-directory: test
       run: bash <(curl -s https://codecov.io/bash) -x "gcov"
+    - name: Codecov
+      working-directory: test
+      run: bash <(curl -s https://codecov.io/bash) -x "llvm-cov gcov"
 
   ubsan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Install
+      run: sudo apt-get install libgtest-dev
     - name: Make test
       working-directory: test
       run: make test
@@ -67,11 +72,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Install
+      run: sudo apt-get install libgtest-dev
     - name: Make test
       working-directory: test
       run: make test
       env:
-        BOOST_PFR_PATH: ../pfr/include
         CXX: clang++
         CXXFLAGS: '-fsanitize=address'
         LDFLAGS: '-fsanitize=address'

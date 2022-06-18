@@ -22,7 +22,7 @@
 
 #include "../forward_list2.hpp"
 
-#include "catch.hpp"
+#include <gtest/gtest.h>
 
 #include <utility>
 
@@ -42,54 +42,58 @@ constexpr typename std::add_const<T>::type& as_const(T& t) noexcept
 
 static_assert(sizeof(forward_list2<int>) == 2 * sizeof(void*), "forward_list2 must be 2 pointers");
 
-static void check_iterators(forward_list2<int>& l)
+class ForwardList : public ::testing::Test
 {
-    CHECK(l.max_size() > 0);
-    CHECK(std::distance(l.begin(), l.end()) < l.max_size());
-    CHECK(std::distance(l.cbefore_begin(), l.cbefore_end()) == std::distance(l.begin(), l.end()));
-    CHECK(std::next(l.before_begin()) == l.begin());
-    CHECK(std::next(l.before_end()) == l.end());
-    CHECK(std::next(l.cbefore_begin()) == l.cbegin());
-    CHECK(std::next(l.cbefore_end()) == l.cend());
-    CHECK(std::next(as_const(l).before_begin()) == as_const(l).begin());
-    CHECK(std::next(as_const(l).before_end()) == as_const(l).end());
-}
-
-static void check_empty_list(forward_list2<int>& l)
-{
-    CHECK(l == forward_list2<int>());
-    CHECK(l.empty());
-    CHECK(l.begin() == l.end());
-    CHECK(l.before_begin() == l.before_end());
-    check_iterators(l);
-}
-
-static void check_ranged_list(forward_list2<int>& l, size_t range)
-{
-    int count = 0;
-    for (auto i : l) {
-        ++count;
-        CHECK(i == count);
+protected:
+    void check_iterators(forward_list2<int>& l)
+    {
+        EXPECT_TRUE(l.max_size() > 0);
+        EXPECT_TRUE(std::distance(l.begin(), l.end()) < l.max_size());
+        EXPECT_EQ(std::distance(l.cbefore_begin(), l.cbefore_end()), std::distance(l.begin(), l.end()));
+        EXPECT_EQ(std::next(l.before_begin()), l.begin());
+        EXPECT_EQ(std::next(l.before_end()), l.end());
+        EXPECT_EQ(std::next(l.cbefore_begin()), l.cbegin());
+        EXPECT_EQ(std::next(l.cbefore_end()), l.cend());
+        EXPECT_EQ(std::next(as_const(l).before_begin()), as_const(l).begin());
+        EXPECT_EQ(std::next(as_const(l).before_end()), as_const(l).end());
     }
 
-    CHECK(l != forward_list2<int>{});
-    CHECK(count == range);
-    CHECK_FALSE(l.empty());
-    CHECK(l.front() == 1);
-    CHECK(l.back() == range);
-    CHECK(as_const(l).front() == 1);
-    CHECK(as_const(l).back() == range);
-    check_iterators(l);
-}
+    void check_empty_list(forward_list2<int>& l)
+    {
+        EXPECT_EQ(l, forward_list2<int>());
+        EXPECT_TRUE(l.empty());
+        EXPECT_EQ(l.begin(), l.end());
+        EXPECT_EQ(l.before_begin(), l.before_end());
+        check_iterators(l);
+    }
 
-TEST_CASE("empty list")
+    void check_ranged_list(forward_list2<int>& l, size_t range)
+    {
+        int count = 0;
+        for (auto i : l) {
+            ++count;
+            EXPECT_EQ(i, count);
+        }
+
+        EXPECT_NE(l, forward_list2<int>{});
+        EXPECT_EQ(count, range);
+        EXPECT_FALSE(l.empty());
+        EXPECT_EQ(l.front(), 1);
+        EXPECT_EQ(l.back(), range);
+        EXPECT_EQ(as_const(l).front(), 1);
+        EXPECT_EQ(as_const(l).back(), range);
+        check_iterators(l);
+    }
+};
+
+TEST_F(ForwardList, Empty)
 {
     forward_list2<int> l;
 
     check_empty_list(l);
 }
 
-TEST_CASE("counter-init list")
+TEST_F(ForwardList, CounterInit)
 {
     const int value = 20;
     const size_t size = 10;
@@ -97,20 +101,20 @@ TEST_CASE("counter-init list")
 
     int count = 0;
     for (auto i : l) {
-        CHECK(i == value);
+        EXPECT_EQ(i, value);
         ++count;
     }
 
-    CHECK(!l.empty());
-    CHECK(count == size);
-    CHECK(l.front() == value);
-    CHECK(l.back() == value);
-    CHECK(as_const(l).front() == value);
-    CHECK(as_const(l).back() == value);
+    EXPECT_TRUE(!l.empty());
+    EXPECT_EQ(count, size);
+    EXPECT_EQ(l.front(), value);
+    EXPECT_EQ(l.back(), value);
+    EXPECT_EQ(as_const(l).front(), value);
+    EXPECT_EQ(as_const(l).back(), value);
     check_iterators(l);
 }
 
-TEST_CASE("iterator-init list")
+TEST_F(ForwardList, IteratorInit)
 {
     const std::vector<int> v{ 1, 2, 3, 4, 5 };
     forward_list2<int> l(v.begin(), v.end());
@@ -118,14 +122,14 @@ TEST_CASE("iterator-init list")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("init-list list")
+TEST_F(ForwardList, ListInit)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5 });
 
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("list copy")
+TEST_F(ForwardList, Copy)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = l1;
@@ -134,7 +138,7 @@ TEST_CASE("list copy")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list copy allocator")
+TEST_F(ForwardList, CopyWithAllocator)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     forward_list2<int> l2(l1, std::allocator<int>());
@@ -143,7 +147,7 @@ TEST_CASE("list copy allocator")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list clear")
+TEST_F(ForwardList, Clear)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = l1;
@@ -153,7 +157,7 @@ TEST_CASE("list clear")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list move")
+TEST_F(ForwardList, Move)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     auto l2 = std::move(l1);
@@ -162,7 +166,7 @@ TEST_CASE("list move")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list move allocator")
+TEST_F(ForwardList, MoveAllocator)
 {
     forward_list2<int> l1{ 1, 2, 3, 4, 5 };
     forward_list2<int> l2(std::move(l1), std::allocator<int>());
@@ -171,7 +175,7 @@ TEST_CASE("list move allocator")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list copy assign")
+TEST_F(ForwardList, CopyAssign)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     forward_list2<int> l2{3, 4, 8, 11};
@@ -181,7 +185,7 @@ TEST_CASE("list copy assign")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list move assign")
+TEST_F(ForwardList, MoveAssign)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5 });
     forward_list2<int> l2{3, 4, 8, 11};
@@ -191,7 +195,7 @@ TEST_CASE("list move assign")
     check_ranged_list(l2, 5);
 }
 
-TEST_CASE("list ilist")
+TEST_F(ForwardList, AssignOperatorInitialization)
 {
     forward_list2<int> l{3, 4, 8, 11};
     l = { 1, 2, 3, 4, 5 };
@@ -199,7 +203,7 @@ TEST_CASE("list ilist")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("assign empty")
+TEST_F(ForwardList, AssignEmpty)
 {
     forward_list2<int> l({ 2, 3, 1, 8 });
     l.assign(0, 100);
@@ -207,7 +211,7 @@ TEST_CASE("assign empty")
     check_empty_list(l);
 }
 
-TEST_CASE("assign count")
+TEST_F(ForwardList, AssignCount)
 {
     const int value = 1;
     const size_t size = 1;
@@ -217,7 +221,7 @@ TEST_CASE("assign count")
     check_ranged_list(l, 1);
 }
 
-TEST_CASE("assign vector")
+TEST_F(ForwardList, AssignVector)
 {
     const std::vector<int> v{1, 2, 3, 4, 5, 6};
     forward_list2<int> l({ 2, 3, 1, 8 });
@@ -226,7 +230,7 @@ TEST_CASE("assign vector")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("assign init-list")
+TEST_F(ForwardList, AssignInitializationList)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5});
     l.assign({ 1, 2, 3 });
@@ -234,7 +238,7 @@ TEST_CASE("assign init-list")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("insert back")
+TEST_F(ForwardList, InsertBack)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5 });
     l.insert_after(l.before_end(), 6);
@@ -242,7 +246,7 @@ TEST_CASE("insert back")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("insert back copy")
+TEST_F(ForwardList, InsertBackCopy)
 {
     const int six = 6;
     forward_list2<int> l({ 1, 2, 3, 4, 5 });
@@ -251,7 +255,7 @@ TEST_CASE("insert back copy")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("insert front")
+TEST_F(ForwardList, InsertFront)
 {
     forward_list2<int> l({ 2, 3, 4, 5, 6 });
     l.insert_after(l.before_begin(), 1);
@@ -259,7 +263,7 @@ TEST_CASE("insert front")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("insert middle")
+TEST_F(ForwardList, InsertMiddle)
 {
     forward_list2<int> l({ 1, 3, 4, 5, 6 });
     l.insert_after(l.begin(), 2);
@@ -267,7 +271,7 @@ TEST_CASE("insert middle")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("insert iterators")
+TEST_F(ForwardList, InsertIterators)
 {
     forward_list2<int> l({ 1, 6 });
     std::vector<int> v{2, 3, 4, 5};
@@ -276,7 +280,7 @@ TEST_CASE("insert iterators")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("insert iterators to end")
+TEST_F(ForwardList, InsertIteratorsToEnd)
 {
     forward_list2<int> l({ 1 });
     std::vector<int> v{2, 3, 4, 5};
@@ -285,7 +289,7 @@ TEST_CASE("insert iterators to end")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("insert nothing")
+TEST_F(ForwardList, InsertNothing)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5});
     l.insert_after(l.begin(), 0, 100);
@@ -293,7 +297,7 @@ TEST_CASE("insert nothing")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("emplace begin")
+TEST_F(ForwardList, EmplaceBegin)
 {
     forward_list2<int> l({ 2, 3, 4, 5});
     l.emplace_after(l.before_begin(), 1);
@@ -301,7 +305,7 @@ TEST_CASE("emplace begin")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("emplace middle")
+TEST_F(ForwardList, EmplaceMiddle)
 {
     forward_list2<int> l({ 1, 3, 4, 5});
     l.emplace_after(l.begin(), 2);
@@ -309,7 +313,7 @@ TEST_CASE("emplace middle")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("emplace end")
+TEST_F(ForwardList, EmplaceEnd)
 {
     forward_list2<int> l({ 1, 2, 3, 4});
     l.emplace_after(l.before_end(), 5);
@@ -317,61 +321,61 @@ TEST_CASE("emplace end")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("erase begin")
+TEST_F(ForwardList, EraseBegin)
 {
     forward_list2<int> l({ 7, 1, 2, 3, 4, 5});
     auto it = l.erase_after(l.before_begin());
  
-    CHECK(it == l.begin());
+    EXPECT_EQ(it, l.begin());
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("erase middle")
+TEST_F(ForwardList, EraseMiddle)
 {
     forward_list2<int> l({ 1, 7, 2, 3, 4, 5});
     auto it = l.erase_after(l.begin());
 
-    CHECK(it == std::next(l.begin()));
+    EXPECT_EQ(it, std::next(l.begin()));
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("erase end")
+TEST_F(ForwardList, EraseEnd)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5, 8});
     auto it = l.erase_after(std::next(l.before_begin(), 5));
 
-    CHECK(it == l.end());
+    EXPECT_EQ(it, l.end());
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("erase range begin")
+TEST_F(ForwardList, EraseRangeBegin)
 {
     forward_list2<int> l({ 7, 8, 9, 1, 2, 3, 4, 5});
     auto it = l.erase_after(l.before_begin(), std::next(l.before_begin(), 4));
  
-    CHECK(it == l.begin());
+    EXPECT_EQ(it, l.begin());
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("erase range middle")
+TEST_F(ForwardList, EraseRangeMiddle)
 {
     forward_list2<int> l({ 1, 7, 8, 9, 2, 3, 4, 5});
     auto it = l.erase_after(l.begin(), std::next(l.begin(), 4));
 
-    CHECK(it == std::next(l.begin()));
+    EXPECT_EQ(it, std::next(l.begin()));
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("erase range end")
+TEST_F(ForwardList, EraseRangeEnd)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5, 7, 8, 9});
     auto it = l.erase_after(std::next(l.before_begin(), 5), l.end());
 
-    CHECK(it == l.end());
+    EXPECT_EQ(it, l.end());
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("push front and back")
+TEST_F(ForwardList, PushFrontAndBack)
 {
     forward_list2<int> l({ 2 });
     l.push_back(3);
@@ -380,7 +384,7 @@ TEST_CASE("push front and back")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("push front to empty")
+TEST_F(ForwardList, PushFrontToEmpty)
 {
     forward_list2<int> l;
     l.push_front(1);
@@ -388,7 +392,7 @@ TEST_CASE("push front to empty")
     check_ranged_list(l, 1);
 }
 
-TEST_CASE("push back to empty")
+TEST_F(ForwardList, PushBackToEmpty)
 {
     forward_list2<int> l;
     l.push_back(1);
@@ -396,7 +400,7 @@ TEST_CASE("push back to empty")
     check_ranged_list(l, 1);
 }
 
-TEST_CASE("push copy")
+TEST_F(ForwardList, PushCopy)
 {
     int three = 3;
     int one = 1;
@@ -407,18 +411,18 @@ TEST_CASE("push copy")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("emplace front and back")
+TEST_F(ForwardList, EmplaceFrontAndBack)
 {
     forward_list2<int> l({ 2 });
     const auto& three = l.emplace_back(3);
     const auto& one = l.emplace_front(1);
 
-    CHECK(three == 3);
-    CHECK(one == 1);
+    EXPECT_EQ(three, 3);
+    EXPECT_EQ(one, 1);
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("pop front")
+TEST_F(ForwardList, PopFront)
 {
     forward_list2<int> l({ 0, 1, 2, 3 });
     l.pop_front();
@@ -426,7 +430,7 @@ TEST_CASE("pop front")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("pop front to empty")
+TEST_F(ForwardList, PopFrontToEmpty)
 {
     forward_list2<int> l({ 1, 2, 3, 4 });
     while (!l.empty())
@@ -435,17 +439,17 @@ TEST_CASE("pop front to empty")
     check_empty_list(l);
 }
 
-TEST_CASE("resize increase")
+TEST_F(ForwardList, ResizeIncrease)
 {   
     forward_list2<int> l({ 1, 2, 3, 4 });
     l.resize(7);
 
-    CHECK(l == forward_list2<int>{ 1, 2, 3, 4, 0, 0, 0 });
+    EXPECT_EQ(l, (forward_list2<int>{ 1, 2, 3, 4, 0, 0, 0 }));
 
     check_iterators(l);
 }
 
-TEST_CASE("resize decrease")
+TEST_F(ForwardList, ResizeDecrease)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5, 6, 7 });
     l.resize(3);
@@ -453,17 +457,17 @@ TEST_CASE("resize decrease")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("resize value increase")
+TEST_F(ForwardList, ResizeValueIncrease)
 {   
     forward_list2<int> l({ 1, 2, 3, 4 });
     l.resize(7, 8);
 
-    CHECK(l == forward_list2<int>{ 1, 2, 3, 4, 8, 8, 8 });
+    EXPECT_EQ(l, (forward_list2<int>{ 1, 2, 3, 4, 8, 8, 8 }));
 
     check_iterators(l);
 }
 
-TEST_CASE("resize value decrease")
+TEST_F(ForwardList, ResizeValueDecrease)
 {
     forward_list2<int> l({ 1, 2, 3, 4, 5, 6, 7 });
     l.resize(3, 8);
@@ -471,7 +475,7 @@ TEST_CASE("resize value decrease")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("swap")
+TEST_F(ForwardList, Swap)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5, 6, 7 });
     forward_list2<int> l2({ 1, 2 });
@@ -481,7 +485,7 @@ TEST_CASE("swap")
     check_ranged_list(l2, 7);
 }
 
-TEST_CASE("std swap")
+TEST_F(ForwardList, StdSwap)
 {
     forward_list2<int> l1({ 1, 2, 3, 4, 5, 6, 7 });
     forward_list2<int> l2({ 1, 2 });
@@ -491,7 +495,7 @@ TEST_CASE("std swap")
     check_ranged_list(l2, 7);
 }
 
-TEST_CASE("merge")
+TEST_F(ForwardList, Merge)
 {
     forward_list2<int> l1({ 1, 3, 5, 6, 7 });
     forward_list2<int> l2({ 2, 4, 8, 9 });
@@ -501,7 +505,7 @@ TEST_CASE("merge")
     check_empty_list(l2);
 }
 
-TEST_CASE("merge move")
+TEST_F(ForwardList, MergeMove)
 {
     forward_list2<int> l({ 2, 4, 8, 9 });
 
@@ -509,7 +513,7 @@ TEST_CASE("merge move")
     check_ranged_list(l, 9);
 }
 
-TEST_CASE("merge compare")
+TEST_F(ForwardList, MergeCompare)
 {
     forward_list2<int> l1({ 1, 3, 5, 6, 7 });
     forward_list2<int> l2({ 2, 4, 8, 9 });
@@ -523,7 +527,7 @@ TEST_CASE("merge compare")
     check_empty_list(l2);
 }
 
-TEST_CASE("merge move compare")
+TEST_F(ForwardList, MergeMoveCompare)
 {
     forward_list2<int> l({ 1, 3, 5, 6, 7 });
     l.reverse();
@@ -534,7 +538,7 @@ TEST_CASE("merge move compare")
     check_ranged_list(l, 9);
 }
 
-TEST_CASE("splice whole")
+TEST_F(ForwardList, SpliceWhole)
 {
     forward_list2<int> l1({ 1, 5, 6, 7 });
     forward_list2<int> l2({ 2, 3, 4 });
@@ -544,7 +548,7 @@ TEST_CASE("splice whole")
     check_empty_list(l2);
 }
 
-TEST_CASE("splice whole move")
+TEST_F(ForwardList, SpliceWholeMove)
 {
     forward_list2<int> l({ 1, 5, 6, 7 });
 
@@ -552,7 +556,7 @@ TEST_CASE("splice whole move")
     check_ranged_list(l, 7);
 }
 
-TEST_CASE("splice one")
+TEST_F(ForwardList, SpliceOne)
 {
     forward_list2<int> l1({ 1, 3, 4, 5 });
     forward_list2<int> l2({ 1, 2, 2, 3, 4 });
@@ -562,7 +566,7 @@ TEST_CASE("splice one")
     check_ranged_list(l2, 4);
 }
 
-TEST_CASE("splice one from end")
+TEST_F(ForwardList, SpliceOneFromEnd)
 {
     forward_list2<int> l1({ 1, 3, 4, 5 });
     forward_list2<int> l2({ 1, 2, 3, 4, 2 });
@@ -572,7 +576,7 @@ TEST_CASE("splice one from end")
     check_ranged_list(l2, 4);
 }
 
-TEST_CASE("splice one from end move")
+TEST_F(ForwardList, SpliceOneFromEndMove)
 {
     forward_list2<int> l1({ 1, 3, 4, 5 });
     forward_list2<int> l2({ 1, 2, 3, 4, 2 });
@@ -582,7 +586,7 @@ TEST_CASE("splice one from end move")
     check_ranged_list(l2, 4);
 }
 
-TEST_CASE("splice one to end")
+TEST_F(ForwardList, SpliceOneToEnd)
 {
     forward_list2<int> l1{ 1, 2, 3, 4 };
     forward_list2<int> l2{ 1, 5 };
@@ -593,7 +597,7 @@ TEST_CASE("splice one to end")
     check_ranged_list(l2, 1);
 }
 
-TEST_CASE("splice one to end move")
+TEST_F(ForwardList, SpliceOneToEndMove)
 {
     forward_list2<int> l1{ 1, 2, 3, 4 };
     forward_list2<int> l2{ 1, 5 };
@@ -604,20 +608,19 @@ TEST_CASE("splice one to end move")
     check_ranged_list(l2, 1);
 }
 
-
-TEST_CASE("splice")
+TEST_F(ForwardList, Splice)
 {
     forward_list2<int> l1({ 1, 5 });
     forward_list2<int> l2({ 1, 2, 3, 4, 2 });
 
     l1.splice_after(l1.begin(), l2, l2.begin(), l2.before_end());
-    CHECK(l1 == forward_list2<int>{ 1, 2, 3, 4, 5 });
+    EXPECT_EQ(l1, (forward_list2<int>{ 1, 2, 3, 4, 5 }));
 
     check_ranged_list(l1, 5);
     check_ranged_list(l2, 2);
 }
 
-TEST_CASE("splice from end")
+TEST_F(ForwardList, SpliceFromEnd)
 {
     forward_list2<int> l1({ 1, 5 });
     forward_list2<int> l2({ 1, 2, 2, 3, 4 });
@@ -627,7 +630,7 @@ TEST_CASE("splice from end")
     check_ranged_list(l2, 2);
 }
 
-TEST_CASE("splice to end")
+TEST_F(ForwardList, SpliceToEnd)
 {
     forward_list2<int> l1{ 1, 2, 3, 4 };
     forward_list2<int> l2{ 1, 5 };
@@ -638,7 +641,7 @@ TEST_CASE("splice to end")
     check_ranged_list(l2, 1);
 }
 
-TEST_CASE("splice move")
+TEST_F(ForwardList, SpliceMove)
 {
     forward_list2<int> l1{ 1, 2, 3, 4 };
     forward_list2<int> l2{ 1, 5 };
@@ -649,7 +652,7 @@ TEST_CASE("splice move")
     check_ranged_list(l2, 1);
 }
 
-TEST_CASE("splice one to self")
+TEST_F(ForwardList, SpliceOneToSelf)
 {
     forward_list2<int> l({ 1, 5, 2, 3, 4});
 
@@ -657,7 +660,7 @@ TEST_CASE("splice one to self")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("splice range to self")
+TEST_F(ForwardList, SpliceRangeToSelf)
 {
     forward_list2<int> l({ 1, 5, 6, 7, 2, 3, 4});
 
@@ -665,7 +668,7 @@ TEST_CASE("splice range to self")
     check_ranged_list(l, 7);
 }
 
-TEST_CASE("remove")
+TEST_F(ForwardList, Remove)
 {
     forward_list2<int> l({ 1, 0, 2, 0, 3, 0});
     l.remove(0);
@@ -673,7 +676,7 @@ TEST_CASE("remove")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("remove predicate")
+TEST_F(ForwardList, RemovePredicate)
 {
     forward_list2<int> l({ 1, -4, 2, -5, 3, -6});
     l.remove_if([](int x){ return x < 0; });
@@ -682,7 +685,7 @@ TEST_CASE("remove predicate")
 }
 
 #ifdef __cpp_lib_erase_if
-TEST_CASE("std erase")
+TEST_F(ForwardList, StdErase)
 {
     forward_list2<int> l({ 1, 0, 2, 0, 3, 0});
     std::erase(l, 0);
@@ -690,7 +693,7 @@ TEST_CASE("std erase")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("std erase if")
+TEST_F(ForwardList, StdEraseIf)
 {
     forward_list2<int> l({ 1, -4, 2, -5, 3, -6});
     std::erase_if(l, [](int x){ return x < 0; });
@@ -699,7 +702,7 @@ TEST_CASE("std erase if")
 }
 #endif
 
-TEST_CASE("reverse")
+TEST_F(ForwardList, Reverse)
 {
     forward_list2<int> l{ 5, 4, 3, 2, 1};
     l.reverse();
@@ -707,7 +710,7 @@ TEST_CASE("reverse")
     check_ranged_list(l, 5);
 }
 
-TEST_CASE("unique")
+TEST_F(ForwardList, Unique)
 {
     forward_list2<int> l{ 1, 1, 1, 2, 3, 3, 3, 4, 4, 4, 4};
     l.unique();
@@ -715,7 +718,7 @@ TEST_CASE("unique")
     check_ranged_list(l, 4);
 }
 
-TEST_CASE("unique predicate")
+TEST_F(ForwardList, UniquePredicate)
 {
     forward_list2<int> l({ 1, -1, 2, -2, 3, -3});
     l.unique([](int x, int y){ return std::abs(x) == std::abs(y); });
@@ -723,7 +726,7 @@ TEST_CASE("unique predicate")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("sort")
+TEST_F(ForwardList, Sort)
 {
     forward_list2<int> l({ 5, 6, 1, 3, 2, 4 });
     l.sort();
@@ -731,7 +734,7 @@ TEST_CASE("sort")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("sort reverse")
+TEST_F(ForwardList, SortReverse)
 {
     forward_list2<int> l({ 5, 6, 1, 3, 2, 4 });
     l.sort([](int x, int y){ return x > y; });
@@ -740,27 +743,27 @@ TEST_CASE("sort reverse")
     check_ranged_list(l, 6);
 }
 
-TEST_CASE("spaceship")
+TEST_F(ForwardList, Spaceship)
 {
     forward_list2<int> a{1, 2, 3};
     forward_list2<int> b{4, 5, 6};
 
-    CHECK_FALSE(a == b);
-    CHECK(a != b);
-    CHECK(a < b);
-    CHECK(a <= b);
-    CHECK_FALSE(a > b);
-    CHECK_FALSE(a >= b);
+    EXPECT_FALSE(a == b);
+    EXPECT_NE(a, b);
+    EXPECT_TRUE(a < b);
+    EXPECT_TRUE(a <= b);
+    EXPECT_FALSE(a > b);
+    EXPECT_FALSE(a >= b);
 
-    CHECK(a == a);
-    CHECK_FALSE(a != a);
-    CHECK_FALSE(a < a);
-    CHECK_FALSE(a > a);
-    CHECK(a >= a);
-    CHECK(a <= a);
+    EXPECT_EQ(a, a);
+    EXPECT_FALSE(a != a);
+    EXPECT_FALSE(a < a);
+    EXPECT_FALSE(a > a);
+    EXPECT_TRUE(a >= a);
+    EXPECT_TRUE(a <= a);
 }
 
-TEST_CASE("merge empty")
+TEST_F(ForwardList, MergeEmpty)
 {
     forward_list2<int> l1, l2;
     l1.merge(l2);
@@ -769,7 +772,7 @@ TEST_CASE("merge empty")
     check_empty_list(l2);
 }
 
-TEST_CASE("merge to empty")
+TEST_F(ForwardList, MergeToEmpty)
 {
     forward_list2<int> l;
     l.merge(forward_list2<int>{1, 2, 3});
@@ -777,7 +780,7 @@ TEST_CASE("merge to empty")
     check_ranged_list(l, 3);
 }
 
-TEST_CASE("merge to self")
+TEST_F(ForwardList, MergeToSelf)
 {
     forward_list2<int> l{1, 2, 3, 4};
     l.merge(l);
@@ -785,7 +788,7 @@ TEST_CASE("merge to self")
     check_ranged_list(l, 4);
 }
 
-TEST_CASE("splice end to end")
+TEST_F(ForwardList, SpliceEndToEnd)
 {
     forward_list2<int> l{1, 2, 3, 4};
     l.splice_after(std::next(l.begin(), 2), l, std::next(l.begin(), 2));
@@ -793,7 +796,7 @@ TEST_CASE("splice end to end")
     check_ranged_list(l, 4);
 }
 
-TEST_CASE("splice same place")
+TEST_F(ForwardList, SpliceSamePlace)
 {
     forward_list2<int> l{1, 2, 3, 4};
     l.splice_after(std::next(l.begin(), 2), l, std::next(l.begin(), 1));
@@ -801,7 +804,7 @@ TEST_CASE("splice same place")
     check_ranged_list(l, 4);
 }
 
-TEST_CASE("splice empty to empty")
+TEST_F(ForwardList, SpliceEmptyToEmpty)
 {
     forward_list2<int> l;
     l.splice_after(l.before_begin(), l, l.before_begin());
