@@ -47,6 +47,9 @@ jobs:
     - name: Codecov
       working-directory: test
       run: bash <(curl -s https://codecov.io/bash) -x "gcov"
+    - name: Codecov
+      working-directory: test
+      run: bash <(curl -s https://codecov.io/bash) -x "llvm-cov gcov"
 
   ubsan:
     runs-on: ubuntu-latest
